@@ -13,7 +13,6 @@ function updateProgressBar(barId, value) {
     }
 }
 
-
 async function updateSystemMetrics() {
     try {
         const response = await fetch("/api/system");
@@ -32,9 +31,43 @@ async function updateSystemMetrics() {
         updateProgressBar("disk-bar", data.disk_percent);
 
     } catch (error) {
-        console.error("Ошибка обновления метрик:", error);
+        console.error("System:", error);
+    }
+}
+
+async function updateWeather() {
+    try {
+        const response = await fetch("/api/weather");
+        const data = await response.json();
+
+        document.getElementById("weather-source").textContent =
+            data.source === "online" ? "🟢 Онлайн" :
+            data.source === "cache" ? "🟡 Кэш" : "🔴 Ошибка";
+
+        document.getElementById("weather-sync").textContent =
+            data.last_sync ?? "---";
+
+        const container = document.getElementById("weather-list");
+        container.innerHTML = "";
+
+        data.cities.forEach(city => {
+            container.innerHTML += `
+                <p>
+                    <b>${city.name}</b><br>
+                    🌡 ${city.temperature}°C
+                    💧 ${city.humidity}%
+                    💨 ${city.wind_speed} м/с
+                </p>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Weather:", error);
     }
 }
 
 updateSystemMetrics();
+updateWeather();
+
 setInterval(updateSystemMetrics, 1000);
+setInterval(updateWeather, 600000);

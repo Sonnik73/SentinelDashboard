@@ -54,10 +54,21 @@
             <p>Время: <span id="time">{{ time }}</span></p>
         </div>
 
-        <div class="card">
-            <h2>🌤 Погода</h2>
-            <p class="small">Скоро появится...</p>
-        </div>
+	<div class="card">
+    		<h2>🌤 Погода</h2>
+
+    		<div id="weather-list">
+        		<p class="small">Загрузка погоды...</p>
+    		</div>
+
+    		<p class="small">
+        		Источник: <span id="weather-source">---</span>
+    		</p>
+
+    		<p class="small">
+        		Последняя синхронизация: <span id="weather-sync">---</span>
+    		</p>
+	</div>
 
         <div class="card">
             <h2>📰 Новости</h2>
