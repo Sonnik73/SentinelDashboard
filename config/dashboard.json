@@ -29,9 +29,19 @@
             }
         ]
     },
-    "rss": {
-        "feeds": []
-    },
+
+	"rss": {
+    		"feeds": [
+        	{
+            		"name": "Хабр",
+            		"url": "https://habr.com/ru/rss/articles/"
+        	},
+        	{
+           	 "name": "РИА Новости",
+            	"url": "https://ria.ru/export/rss2/archive/index.xml"
+        	}
+    		]
+	},
     "network": {
         "hosts": []
     }

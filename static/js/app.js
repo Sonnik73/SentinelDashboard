@@ -68,6 +68,39 @@ async function updateWeather() {
 
 updateSystemMetrics();
 updateWeather();
+updateRSS();
 
-setInterval(updateSystemMetrics, 1000);
+async function updateRSS() {
+    try {
+        const response = await fetch("/api/rss");
+        const data = await response.json();
+
+        document.getElementById("rss-source").textContent =
+            data.source === "online" ? "🟢 Онлайн" :
+            data.source === "cache" ? "🟡 Кэш" : "🔴 Ошибка";
+
+        document.getElementById("rss-sync").textContent =
+            data.last_sync ?? "---";
+
+        const container = document.getElementById("rss-list");
+        container.innerHTML = "";
+
+        data.items.slice(0, 5).forEach(item => {
+            container.innerHTML += `
+                <p>
+                    <b>${item.source}</b><br>
+                    <a href="${item.link}" target="_blank">
+                        ${item.title}
+                    </a>
+                </p>
+            `;
+        });
+
+    } catch (error) {
+        console.error("RSS:", error);
+    }
+}
+
+setInterval(updatehĥSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
+setInterval(updateRSS, 300000);

@@ -1,3 +1,4 @@
+from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
 from fastapi import APIRouter
 
@@ -20,3 +21,7 @@ def api_weather():
 @router.get("/widgets")
 def api_widgets():
     return get_widgets_data()
+
+@router.get("/rss")
+def api_rss():
+    return get_rss()
