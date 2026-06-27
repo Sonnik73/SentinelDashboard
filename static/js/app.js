@@ -101,6 +101,6 @@ async function updateRSS() {
     }
 }
 
-setInterval(updatehĥSystemMetrics, 1000);
+setInterval(updateSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
 setInterval(updateRSS, 300000);
