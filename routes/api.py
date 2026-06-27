@@ -1,4 +1,5 @@
 from modules.network.service import get_network_status
+from core.version import get_version
 from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
 from fastapi import APIRouter
@@ -30,3 +31,14 @@ def api_rss():
 @router.get("/network")
 def api_network():
     return get_network_status()
+
+
+@router.get("/info")
+def api_info():
+    from core.time import now_string
+
+    return {
+        "project": "SentinelDashboard",
+        "version": get_version(),
+        "build": now_string(),
+    }

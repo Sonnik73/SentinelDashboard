@@ -94,3 +94,29 @@ body {
     background: #4CAF50;
     transition: width 0.5s ease;
 }
+
+.network-item {
+    margin-bottom: 10px;
+}
+
+.network-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer {
+    margin-top: 30px;
+    padding: 18px 10px;
+    border-top: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #bdbdbd;
+    font-size: 0.9rem;
+}
+
+.footer .small {
+    color: #8f8f8f;
+}

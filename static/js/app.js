@@ -107,18 +107,23 @@ async function updateNetwork() {
         const data = await response.json();
 
         document.getElementById("network-interface").textContent = data.interface;
+        document.getElementById("network-ip").textContent = data.ip ?? "---";
         document.getElementById("network-sync").textContent = data.last_sync ?? "---";
 
         const container = document.getElementById("network-list");
         container.innerHTML = "";
 
         data.hosts.forEach(host => {
+            const pingText = host.ping_ms !== null ? `${host.ping_ms} мс` : "нет ответа";
+
             container.innerHTML += `
-                <p>
-                    ${host.online ? "🟢" : "🔴"}
-                    <b>${host.name}</b><br>
-                    <span class="small">${host.address}</span>
-                </p>
+                <div class="network-item">
+                    <div class="network-main">
+                        <span>${host.online ? "🟢" : "🔴"} <b>${host.name}</b></span>
+                        <span>${pingText}</span>
+                    </div>
+                    <div class="small">${host.address}</div>
+                </div>
             `;
         });
 

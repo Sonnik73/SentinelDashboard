@@ -1,59 +1,81 @@
-Changelog
+# SentinelDashboard Changelog
 
-Все значимые изменения проекта SentinelDashboard будут документироваться в этом файле.
-
-Проект придерживается принципа постепенного развития: каждая версия должна быть полностью работоспособной и пригодной к использованию.
+Все значимые изменения проекта фиксируются здесь.
 
 ---
 
-[0.2.0] - 2026-06-27
-
-Добавлено
-
-- Создан проект SentinelDashboard.
-- Инициализирован Git-репозиторий.
-- Создана базовая структура каталогов проекта.
-- Настроено виртуальное окружение Python.
-- Установлены FastAPI, Uvicorn, Jinja2 и Psutil.
-- Реализован первый HTTP API с системными метриками.
-- Создан HTML-шаблон главной страницы.
-- Добавлен собственный CSS-интерфейс.
-- Настроена работа Jinja2-шаблонов.
-- Добавлен ".gitignore".
-- Создан "README.md".
-- Подготовлена архитектура для дальнейшего модульного развития проекта.
-
-Изменено
-
-- Переход от JSON-ответа к полноценному HTML-интерфейсу.
-- Переработана структура проекта с учётом долгосрочного развития.
-
-Исправлено
-
-- Исправлена несовместимость "TemplateResponse" с актуальной версией FastAPI/Starlette.
-
----
-
-План для версии 0.3.0
-
-Планируется
-
-- Живое обновление метрик без перезагрузки страницы.
-- Отображение температуры процессора Raspberry Pi.
-- Отображение времени работы системы (Uptime).
-- Улучшение внешнего вида панели.
-- Подготовка архитектуры модулей.
-
-## v0.5.1 - Infrastructure Core
+## v0.8.2 (In Progress)
 
 ### Added
-- Centralized cache layer (`core/cache.py`)
-- Centralized time service (`core/time.py`)
+- VERSION file
+- Project identity
+
+---
+
+## v0.8.1
+
+### Added
+- Ping latency
+- Raspberry Pi IP
+- Automatic interface detection
+- Compact Network Widget
+
+---
+
+## v0.8.0
+
+### Added
+- Network Widget
+- Router monitoring
+- Internet monitoring
+
+---
+
+## v0.7.1
+
+### Fixed
+- Dashboard auto update
+
+---
+
+## v0.7.0
+
+### Added
+- RSS Widget
+
+---
+
+## v0.6.0
+
+### Added
+- Configuration system
+- Widget Engine
+
+---
+
+## v0.5.1
+
+### Added
+- Infrastructure Core
+
+---
+
+## v0.5.0
+
+### Added
+- Weather Widget
+- Offline cache
+
+---
+
+## v0.4.0
+
+### Added
+- Progress bars
+
+---
+
+## v0.3.1
 
 ### Changed
-- Weather module migrated to common cache service
-- System monitor migrated to common time service
-
-### Improved
-- Reduced code duplication
-- Prepared architecture for future modules
+- Project architecture refactoring

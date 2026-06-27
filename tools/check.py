@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 print("=" * 50)
@@ -56,6 +57,44 @@ try:
 except Exception as e:
     err("config/dashboard.json")
     print(e)
+
+
+
+# ---------- API ----------
+
+print("\nChecking API endpoints...")
+
+API_BASE_URL = "http://127.0.0.1:8000"
+API_ENDPOINTS = [
+    "/api/info",
+    "/api/system",
+    "/api/weather",
+    "/api/rss",
+    "/api/network",
+]
+
+server_available = True
+
+try:
+    urllib.request.urlopen(API_BASE_URL + "/api/info", timeout=2)
+except Exception:
+    server_available = False
+
+if not server_available:
+    print("[WARN] FastAPI server is not running. API checks skipped.")
+else:
+    for endpoint in API_ENDPOINTS:
+        try:
+            response = urllib.request.urlopen(API_BASE_URL + endpoint, timeout=5)
+
+            if response.status == 200:
+                ok(endpoint)
+            else:
+                err(f"{endpoint} returned HTTP {response.status}")
+
+        except Exception as e:
+            err(endpoint)
+            print(e)
 
 
 print("\n" + "=" * 50)
