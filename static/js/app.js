@@ -69,7 +69,7 @@ async function updateWeather() {
 updateSystemMetrics();
 updateWeather();
 updateRSS();
-
+updateNetwork();
 async function updateRSS() {
     try {
         const response = await fetch("/api/rss");
@@ -101,6 +101,34 @@ async function updateRSS() {
     }
 }
 
+async function updateNetwork() {
+    try {
+        const response = await fetch("/api/network");
+        const data = await response.json();
+
+        document.getElementById("network-interface").textContent = data.interface;
+        document.getElementById("network-sync").textContent = data.last_sync ?? "---";
+
+        const container = document.getElementById("network-list");
+        container.innerHTML = "";
+
+        data.hosts.forEach(host => {
+            container.innerHTML += `
+                <p>
+                    ${host.online ? "🟢" : "🔴"}
+                    <b>${host.name}</b><br>
+                    <span class="small">${host.address}</span>
+                </p>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Network:", error);
+    }
+}
+
+
 setInterval(updateSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
 setInterval(updateRSS, 300000);
+setInterval(updateNetwork, 30000);

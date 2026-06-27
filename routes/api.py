@@ -1,3 +1,4 @@
+from modules.network.service import get_network_status
 from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
 from fastapi import APIRouter
@@ -25,3 +26,7 @@ def api_widgets():
 @router.get("/rss")
 def api_rss():
     return get_rss()
+
+@router.get("/network")
+def api_network():
+    return get_network_status()
