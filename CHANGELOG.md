@@ -43,3 +43,17 @@ Changelog
 - Отображение времени работы системы (Uptime).
 - Улучшение внешнего вида панели.
 - Подготовка архитектуры модулей.
+
+## v0.5.1 - Infrastructure Core
+
+### Added
+- Centralized cache layer (`core/cache.py`)
+- Centralized time service (`core/time.py`)
+
+### Changed
+- Weather module migrated to common cache service
+- System monitor migrated to common time service
+
+### Improved
+- Reduced code duplication
+- Prepared architecture for future modules

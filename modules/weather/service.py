@@ -1,11 +1,9 @@
 from datetime import datetime
-from pathlib import Path
-import json
-
+from core.cache import load_cache, save_cache
+from core.time import now_string
 import httpx
 
 
-CACHE_FILE = Path("data/weather_cache.json")
 
 
 CITIES = [
@@ -27,19 +25,6 @@ CITIES = [
 ]
 
 
-def load_cache():
-    if not CACHE_FILE.exists():
-        return None
-
-    with open(CACHE_FILE, "r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def save_cache(data):
-    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(CACHE_FILE, "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
 
 
 def fetch_city_weather(city):
@@ -70,15 +55,15 @@ def get_weather():
     try:
         weather_data = {
             "source": "online",
-            "last_sync": datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+            "last_sync": now_string(),
             "cities": [fetch_city_weather(city) for city in CITIES],
         }
 
-        save_cache(weather_data)
+        save_cache("weather", weather_data)
         return weather_data
 
     except Exception:
-        cached_data = load_cache()
+        cached_data = load_cache("weather")
 
         if cached_data:
             cached_data["source"] = "cache"

@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+from core.time import now, now_string
 import platform
 import subprocess
 
@@ -33,11 +34,11 @@ def format_uptime(seconds):
 
 def get_system_metrics():
     return {
-        "time": datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
+	"time": now_string(),
         "hostname": platform.node(),
         "cpu_percent": psutil.cpu_percent(interval=0.5),
         "memory_percent": psutil.virtual_memory().percent,
         "disk_percent": psutil.disk_usage("/").percent,
         "temperature": get_temperature(),
-        "uptime": format_uptime(psutil.boot_time() and datetime.now().timestamp() - psutil.boot_time()),
+	"uptime": format_uptime(now().timestamp() - psutil.boot_time()),
     }
