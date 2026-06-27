@@ -1,30 +1,12 @@
+from core.config import get_section
 from datetime import datetime
 from core.cache import load_cache, save_cache
 from core.time import now_string
 import httpx
 
-
-
-
-CITIES = [
-    {
-        "name": "Москва",
-        "latitude": 55.7558,
-        "longitude": 37.6173,
-    },
-    {
-        "name": "Краснодар",
-        "latitude": 45.0355,
-        "longitude": 38.9753,
-    },
-    {
-        "name": "Ульяновск",
-        "latitude": 54.3142,
-        "longitude": 48.4031,
-    },
-]
-
-
+WEATHER_CONFIG = get_section("weather")
+CITIES = WEATHER_CONFIG["cities"]
+TIMEZONE = WEATHER_CONFIG["timezone"]
 
 
 def fetch_city_weather(city):
@@ -34,7 +16,7 @@ def fetch_city_weather(city):
         "latitude": city["latitude"],
         "longitude": city["longitude"],
         "current": "temperature_2m,relative_humidity_2m,wind_speed_10m",
-        "timezone": "Europe/Moscow",
+	"timezone": TIMEZONE,
     }
 
     response = httpx.get(url, params=params, timeout=5)

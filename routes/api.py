@@ -1,3 +1,4 @@
+from core.widgets import get_widgets_data
 from fastapi import APIRouter
 
 from core.system import get_system_metrics
@@ -15,3 +16,7 @@ def api_system():
 @router.get("/weather")
 def api_weather():
     return get_weather()
+
+@router.get("/widgets")
+def api_widgets():
+    return get_widgets_data()

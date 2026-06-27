@@ -1,0 +1,38 @@
+{
+    "dashboard": {
+        "title": "Sentinel Dashboard",
+        "refresh": {
+            "system": 1,
+            "weather": 600,
+            "rss": 300,
+            "network": 30
+        }
+    },
+    "weather": {
+        "provider": "open-meteo",
+        "timezone": "Europe/Moscow",
+        "cities": [
+            {
+                "name": "Москва",
+                "latitude": 55.7558,
+                "longitude": 37.6173
+            },
+            {
+                "name": "Краснодар",
+                "latitude": 45.0355,
+                "longitude": 38.9753
+            },
+            {
+                "name": "Ульяновск",
+                "latitude": 54.3142,
+                "longitude": 48.4031
+            }
+        ]
+    },
+    "rss": {
+        "feeds": []
+    },
+    "network": {
+        "hosts": []
+    }
+}
