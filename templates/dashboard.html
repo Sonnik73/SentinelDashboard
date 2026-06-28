@@ -34,11 +34,10 @@
     </div>
 
     <div class="settings-section settings-actions">
-        <button id="copy-view-link" class="settings-action-button">
-            📋 Копировать ссылку
+        <button id="generate-view-link" class="settings-action-button">
+            🔗 Поделиться представлением
         </button>
-
-        <button id="reset-view" class="settings-action-button" disabled>
+<button id="reset-view" class="settings-action-button" disabled>
             ↺ Сбросить
         </button>
 
@@ -63,7 +62,7 @@
     <div class="grid">
 
         {% if "system" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="system">
             <h2>🖥 Raspberry Pi</h2>
 
             <div class="metric-row">
@@ -100,7 +99,7 @@
         {% endif %}
 
         {% if "weather" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="weather">
             <h2>🌤 Погода</h2>
 
             <div id="weather-list">
@@ -118,7 +117,7 @@
         {% endif %}
 
         {% if "rss" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="rss">
             <h2>📰 Новости</h2>
 
             <div id="rss-list">
@@ -138,14 +137,14 @@
         {% endif %}
 
         {% if "birthdays" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="birthdays">
             <h2>🎂 Дни рождения</h2>
             <p class="small">Excel пока не подключён</p>
         </div>
         {% endif %}
 
         {% if "network" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="network">
             <h2>🌐 Сеть</h2>
 
             <p>Интерфейс: <span id="network-interface">---</span></p>
@@ -163,7 +162,7 @@
         {% endif %}
 
         {% if "cameras" in visible_widgets %}
-        <div class="card">
+        <div class="card" data-widget="cameras">
             <h2>📷 Камеры</h2>
             <p class="small">Ожидается подключение регистратора</p>
         </div>
@@ -173,7 +172,7 @@
 
 </div>
 
-<script src="/static/js/app.js?v=8"></script>
+<script src="/static/js/app.js?v=13"></script>
 
 <footer class="footer">
     <div>

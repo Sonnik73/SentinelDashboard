@@ -167,10 +167,26 @@ async function loadSettingsDrawer() {
 
             container.innerHTML += `
                 <label class="settings-widget">
-                    <input type="checkbox" ${checked} disabled>
+                    <input
+                        type="checkbox"
+                        data-widget-id="${widget.id}"
+                        ${checked}
+                    >
                     <span>${widget.icon} ${widget.title}</span>
                 </label>
             `;
+        });
+
+        container.querySelectorAll("input[type='checkbox']").forEach(input => {
+            input.addEventListener("change", () => {
+                viewEditor.currentWidgets = Array.from(
+                    container.querySelectorAll("input[type='checkbox']:checked")
+                ).map(item => item.dataset.widgetId);
+
+                updateEditorState();
+        applyView();
+                applyView();
+            });
         });
 
     } catch (error) {
@@ -228,14 +244,31 @@ function hasUnsavedChanges() {
 }
 
 
+
+function applyView() {
+    document.querySelectorAll("[data-widget]").forEach(card => {
+        const widget = card.dataset.widget;
+
+        if (viewEditor.currentWidgets.includes(widget)) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+
 function updateEditorState() {
     const state = document.getElementById("settings-state");
+    const reset = document.getElementById("reset-view");
+
     if (!state) return;
 
     if (hasUnsavedChanges()) {
         state.textContent = "🟡 Есть несохранённые изменения";
+        if (reset) reset.disabled = false;
     } else {
         state.textContent = "🟢 Без изменений";
+        if (reset) reset.disabled = true;
     }
 }
 
@@ -243,8 +276,12 @@ function updateEditorState() {
 function getCurrentViewLink() {
     const url = new URL(window.location.href);
 
-    if (viewEditor.currentView) {
+    if (hasUnsavedChanges()) {
+        url.searchParams.set("view", "custom");
+        url.searchParams.set("widgets", viewEditor.currentWidgets.join(","));
+    } else if (viewEditor.currentView) {
         url.searchParams.set("view", viewEditor.currentView);
+        url.searchParams.delete("widgets");
     }
 
     return url.toString();
@@ -252,18 +289,44 @@ function getCurrentViewLink() {
 
 function initViewEditorActions() {
     const copyButton = document.getElementById("copy-view-link");
+    const resetButton = document.getElementById("reset-view");
+
     if (!copyButton) return;
+
+    if (resetButton) {
+        resetButton.addEventListener("click", () => {
+
+            viewEditor.currentWidgets = [...viewEditor.originalWidgets];
+
+            document.querySelectorAll("#settings-widgets input").forEach(input => {
+                input.checked = viewEditor.originalWidgets.includes(input.dataset.widgetId);
+            });
+
+            updateEditorState();
+        });
+    }
 
     copyButton.addEventListener("click", async () => {
         const link = getCurrentViewLink();
 
-        try {
-            await navigator.clipboard.writeText(link);
-            copyButton.textContent = "✅ Ссылка скопирована";
-        } catch (error) {
-            console.error("Copy link:", error);
-            copyButton.textContent = "⚠️ Не удалось скопировать";
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(link);
+
+                copyButton.textContent = "✅ Ссылка скопирована";
+
+                setTimeout(() => {
+                    copyButton.textContent = "📋 Копировать ссылку";
+                }, 2000);
+
+                return;
+            } catch (e) {
+            }
         }
+
+        window.prompt("Скопируйте ссылку:", link);
+
+        copyButton.textContent = "📋 Ссылка показана";
 
         setTimeout(() => {
             copyButton.textContent = "📋 Копировать ссылку";
