@@ -137,3 +137,60 @@ setInterval(updateSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
 setInterval(updateRSS, 300000);
 setInterval(updateNetwork, 30000);
+
+async function loadSettingsDrawer() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const view = params.get("view");
+        const url = view ? `/api/views?view=${view}` : "/api/views";
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        document.getElementById("settings-current-view").textContent =
+            `${data.current.title} (${data.current.id})`;
+
+        const container = document.getElementById("settings-widgets");
+        container.innerHTML = "";
+
+        data.available_widgets.forEach(widget => {
+            const checked = data.widgets.includes(widget.id) ? "checked" : "";
+
+            container.innerHTML += `
+                <label class="settings-widget">
+                    <input type="checkbox" ${checked} disabled>
+                    <span>${widget.icon} ${widget.title}</span>
+                </label>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Settings:", error);
+    }
+}
+
+function initSettingsDrawer() {
+    const button = document.getElementById("settings-button");
+    const close = document.getElementById("settings-close");
+    const drawer = document.getElementById("settings-drawer");
+    const overlay = document.getElementById("settings-overlay");
+
+    if (!button || !close || !drawer || !overlay) return;
+
+    function openDrawer() {
+        drawer.classList.add("open");
+        overlay.classList.add("open");
+        loadSettingsDrawer();
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove("open");
+        overlay.classList.remove("open");
+    }
+
+    button.addEventListener("click", openDrawer);
+    close.addEventListener("click", closeDrawer);
+    overlay.addEventListener("click", closeDrawer);
+}
+
+initSettingsDrawer();
