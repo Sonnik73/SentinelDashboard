@@ -18,6 +18,10 @@ async function updateSystemMetrics() {
         const response = await fetch("/api/system");
         const data = await response.json();
 
+
+
+
+
         document.getElementById("time").textContent = data.time;
         document.getElementById("cpu").textContent = data.cpu_percent + "%";
         document.getElementById("ram").textContent = data.memory_percent + "%";
@@ -147,6 +151,11 @@ async function loadSettingsDrawer() {
         const response = await fetch(url);
         const data = await response.json();
 
+        viewEditor.currentView = data.current.id;
+        viewEditor.originalWidgets = [...data.widgets];
+        viewEditor.currentWidgets = [...data.widgets];
+        updateEditorState();
+
         document.getElementById("settings-current-view").textContent =
             `${data.current.title} (${data.current.id})`;
 
@@ -194,3 +203,72 @@ function initSettingsDrawer() {
 }
 
 initSettingsDrawer();
+
+
+
+// ------------------------------
+// View Editor State
+// ------------------------------
+
+const viewEditor = {
+    originalWidgets: [],
+    currentWidgets: [],
+    currentView: "",
+};
+
+function arraysEqual(a, b) {
+    return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+}
+
+function hasUnsavedChanges() {
+    return !arraysEqual(
+        viewEditor.originalWidgets,
+        viewEditor.currentWidgets
+    );
+}
+
+
+function updateEditorState() {
+    const state = document.getElementById("settings-state");
+    if (!state) return;
+
+    if (hasUnsavedChanges()) {
+        state.textContent = "🟡 Есть несохранённые изменения";
+    } else {
+        state.textContent = "🟢 Без изменений";
+    }
+}
+
+
+function getCurrentViewLink() {
+    const url = new URL(window.location.href);
+
+    if (viewEditor.currentView) {
+        url.searchParams.set("view", viewEditor.currentView);
+    }
+
+    return url.toString();
+}
+
+function initViewEditorActions() {
+    const copyButton = document.getElementById("copy-view-link");
+    if (!copyButton) return;
+
+    copyButton.addEventListener("click", async () => {
+        const link = getCurrentViewLink();
+
+        try {
+            await navigator.clipboard.writeText(link);
+            copyButton.textContent = "✅ Ссылка скопирована";
+        } catch (error) {
+            console.error("Copy link:", error);
+            copyButton.textContent = "⚠️ Не удалось скопировать";
+        }
+
+        setTimeout(() => {
+            copyButton.textContent = "📋 Копировать ссылку";
+        }, 2000);
+    });
+}
+
+initViewEditorActions();

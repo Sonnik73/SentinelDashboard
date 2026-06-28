@@ -4,6 +4,19 @@
 
 ---
 
+## v0.9.4
+
+### Added
+- Settings Drawer action panel
+- View Editor state model
+- Current view status indicator
+- Copy view link button foundation
+
+### Fixed
+- Restored dashboard auto update after View Editor changes
+
+---
+
 ## v0.8.2 (In Progress)
 
 ### Added

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2">
 </head>
 
 <body>
@@ -20,6 +20,10 @@
     <div class="settings-section">
         <p class="small">Current View</p>
         <h3 id="settings-current-view">---</h3>
+
+        <p id="settings-state" class="small">
+            🟢 Без изменений
+        </p>
     </div>
 
     <div class="settings-section">
@@ -27,6 +31,20 @@
         <div id="settings-widgets">
             <p class="small">Loading...</p>
         </div>
+    </div>
+
+    <div class="settings-section settings-actions">
+        <button id="copy-view-link" class="settings-action-button">
+            📋 Копировать ссылку
+        </button>
+
+        <button id="reset-view" class="settings-action-button" disabled>
+            ↺ Сбросить
+        </button>
+
+        <button id="save-view-as" class="settings-action-button" disabled>
+            💾 Сохранить как...
+        </button>
     </div>
 </div>
 
@@ -155,7 +173,7 @@
 
 </div>
 
-<script src="/static/js/app.js?v=5"></script>
+<script src="/static/js/app.js?v=8"></script>
 
 <footer class="footer">
     <div>
