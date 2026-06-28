@@ -1,8 +1,9 @@
 from modules.network.service import get_network_status
+from modules.views.service import list_views, load_view
 from core.version import get_version
 from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from core.system import get_system_metrics
 from modules.weather.service import get_weather
@@ -41,4 +42,28 @@ def api_info():
         "project": "SentinelDashboard",
         "version": get_version(),
         "build": now_string(),
+    }
+
+
+@router.get("/views")
+def api_views(request: Request):
+    view_name = request.query_params.get("view")
+    current_view = load_view(view_name)
+
+    return {
+        "current": {
+            "id": current_view.get("id"),
+            "title": current_view.get("title", current_view.get("id")),
+        },
+        "available": list_views(),
+        "widgets": current_view.get("widgets", []),
+    }
+
+    return {
+        "current": {
+            "id": current_view.get("id"),
+            "title": current_view.get("title", current_view.get("id")),
+        },
+        "available": list_views(),
+        "widgets": current_view.get("widgets", []),
     }
