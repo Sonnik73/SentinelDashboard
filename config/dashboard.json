@@ -29,31 +29,56 @@
             }
         ]
     },
-
-	"rss": {
-    		"feeds": [
-        	{
-            		"name": "Хабр",
-            		"url": "https://habr.com/ru/rss/articles/"
-        	},
-        	{
-           	 "name": "РИА Новости",
-            	"url": "https://ria.ru/export/rss2/archive/index.xml"
-        	}
-    		]
-	},
-	"network": {
-    		"router_ip": "192.168.88.1",
-    		"internet_host": "1.1.1.1",
-    		"hosts": [
-        		{
-           		 "name": "Роутер",
-            		"address": "192.168.88.1"
-        	},
-        	{
-            		"name": "Интернет",
-            		"address": "1.1.1.1"
-        	}
-    		]
-	}
+    "rss": {
+        "feeds": [
+            {
+                "name": "Хабр",
+                "url": "https://habr.com/ru/rss/articles/"
+            },
+            {
+                "name": "РИА Новости",
+                "url": "https://ria.ru/export/rss2/archive/index.xml"
+            }
+        ]
+    },
+    "network": {
+        "router_ip": "192.168.88.1",
+        "internet_host": "1.1.1.1",
+        "hosts": [
+            {
+                "name": "Роутер",
+                "address": "192.168.88.1"
+            },
+            {
+                "name": "Интернет",
+                "address": "1.1.1.1"
+            }
+        ]
+    },
+    "widgets": {
+        "system": {
+            "title": "System",
+            "icon": "🖥"
+        },
+        "weather": {
+            "title": "Weather",
+            "icon": "🌤"
+        },
+        "rss": {
+            "title": "News",
+            "icon": "📰"
+        },
+        "network": {
+            "title": "Network",
+            "icon": "🌐"
+        },
+        "birthdays": {
+            "title": "Birthdays",
+            "icon": "🎂"
+        },
+        "cameras": {
+            "title": "Cameras",
+            "icon": "📷"
+        }
+    }
 }

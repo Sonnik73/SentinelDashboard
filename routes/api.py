@@ -1,6 +1,7 @@
 from modules.network.service import get_network_status
 from modules.views.service import list_views, load_view
 from core.version import get_version
+from core.config import get_section
 from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
 from fastapi import APIRouter, Request
@@ -50,20 +51,44 @@ def api_views(request: Request):
     view_name = request.query_params.get("view")
     current_view = load_view(view_name)
 
-    return {
-        "current": {
-            "id": current_view.get("id"),
-            "title": current_view.get("title", current_view.get("id")),
-        },
-        "available": list_views(),
-        "widgets": current_view.get("widgets", []),
-    }
+    widget_config = get_section("widgets")
+
+    available_widgets = [
+        {
+            "id": widget_id,
+            "title": meta.get("title", widget_id),
+            "icon": meta.get("icon", ""),
+        }
+        for widget_id, meta in widget_config.items()
+    ]
 
     return {
         "current": {
             "id": current_view.get("id"),
             "title": current_view.get("title", current_view.get("id")),
         },
-        "available": list_views(),
+        "available_views": list_views(),
+        "available_widgets": available_widgets,
+        "widgets": current_view.get("widgets", []),
+    }
+
+    widget_config = get_section("widgets")
+
+    available_widgets = [
+        {
+            "id": widget_id,
+            "title": meta.get("title", widget_id),
+            "icon": meta.get("icon", ""),
+        }
+        for widget_id, meta in widget_config.items()
+    ]
+
+    return {
+        "current": {
+            "id": current_view.get("id"),
+            "title": current_view.get("title", current_view.get("id")),
+        },
+        "available_views": list_views(),
+        "available_widgets": available_widgets,
         "widgets": current_view.get("widgets", []),
     }
