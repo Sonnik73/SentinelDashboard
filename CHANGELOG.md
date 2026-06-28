@@ -4,6 +4,25 @@
 
 ---
 
+## v1.0.0
+
+### Added
+- First stable release
+- Modular dashboard architecture
+- System, Weather, RSS and Network widgets
+- Dashboard Views Engine
+- Settings Drawer
+- View Editor state model
+- Live Preview Engine
+- Shareable dashboard views
+- Project documentation
+
+### Changed
+- Stabilized project structure
+- Cleaned unused architecture files
+- Added Road to Stability documentation
+
+---
 ## v0.9.4
 
 ### Added
