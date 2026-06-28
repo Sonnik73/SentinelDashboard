@@ -1,0 +1,7 @@
+{
+    "title": "Wall Display",
+    "widgets": [
+        "weather",
+        "rss"
+    ]
+}

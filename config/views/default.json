@@ -1,0 +1,9 @@
+{
+    "title": "Default",
+    "widgets": [
+        "system",
+        "weather",
+        "rss",
+        "network"
+    ]
+}
