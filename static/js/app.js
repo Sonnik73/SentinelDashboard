@@ -250,9 +250,9 @@ function applyView() {
         const widget = card.dataset.widget;
 
         if (viewEditor.currentWidgets.includes(widget)) {
-            card.style.display = "";
+            card.classList.remove("hidden-widget");
         } else {
-            card.style.display = "none";
+            card.classList.add("hidden-widget");
         }
     });
 }
