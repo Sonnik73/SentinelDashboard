@@ -17,6 +17,22 @@ def list_views():
     )
 
 
+def normalize_view(view: dict) -> dict:
+    widgets = view.get("widgets", [])
+
+    if "layout" not in view:
+        view["layout"] = [[widget] for widget in widgets]
+
+    if "widgets" not in view:
+        view["widgets"] = [
+            widget
+            for row in view.get("layout", [])
+            for widget in row
+        ]
+
+    return view
+
+
 def load_view(name: str | None = None):
     view_name = name or DEFAULT_VIEW
     view_file = VIEWS_DIR / f"{view_name}.json"
@@ -29,7 +45,7 @@ def load_view(name: str | None = None):
         view = json.load(file)
 
     view["id"] = view_name
-    return view
+    return normalize_view(view)
 
 
 def get_view_widgets(name: str | None = None):

@@ -52,7 +52,6 @@ def api_views(request: Request):
     current_view = load_view(view_name)
 
     widget_config = get_section("widgets")
-
     available_widgets = [
         {
             "id": widget_id,
@@ -70,25 +69,5 @@ def api_views(request: Request):
         "available_views": list_views(),
         "available_widgets": available_widgets,
         "widgets": current_view.get("widgets", []),
-    }
-
-    widget_config = get_section("widgets")
-
-    available_widgets = [
-        {
-            "id": widget_id,
-            "title": meta.get("title", widget_id),
-            "icon": meta.get("icon", ""),
-        }
-        for widget_id, meta in widget_config.items()
-    ]
-
-    return {
-        "current": {
-            "id": current_view.get("id"),
-            "title": current_view.get("title", current_view.get("id")),
-        },
-        "available_views": list_views(),
-        "available_widgets": available_widgets,
-        "widgets": current_view.get("widgets", []),
+        "layout": current_view.get("layout", []),
     }
