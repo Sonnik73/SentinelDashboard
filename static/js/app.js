@@ -173,6 +173,12 @@ async function loadSettingsDrawer() {
                         ${checked}
                     >
                     <span>${widget.icon} ${widget.title}</span>
+                    <select class="widget-span-select" data-widget-span="${widget.id}">
+                        <option value="3">1/4</option>
+                        <option value="4">1/3</option>
+                        <option value="6">1/2</option>
+                        <option value="12">Вся ширина</option>
+                    </select>
                 </label>
             `;
         });

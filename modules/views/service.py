@@ -25,7 +25,7 @@ def normalize_view(view: dict) -> dict:
             [
                 {
                     "widget": widget,
-                    "span": 1,
+                    "span": 12,
                 }
             ]
             for widget in widgets
@@ -40,8 +40,11 @@ def normalize_view(view: dict) -> dict:
             if isinstance(item, str):
                 item = {
                     "widget": item,
-                    "span": 1,
+                    "span": 12,
                 }
+
+            if isinstance(item, dict) and "span" not in item:
+                item["span"] = 12
 
             new_row.append(item)
 
@@ -49,12 +52,12 @@ def normalize_view(view: dict) -> dict:
 
     view["layout"] = normalized
 
-    if "widgets" not in view:
-        view["widgets"] = [
-            widget
-            for row in view.get("layout", [])
-            for widget in row
-        ]
+    view["widgets"] = [
+        item.get("widget")
+        for row in view.get("layout", [])
+        for item in row
+        if isinstance(item, dict) and item.get("widget")
+    ]
 
     return view
 

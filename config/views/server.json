@@ -1,7 +1,17 @@
 {
     "title": "Server",
-    "widgets": [
-        "system",
-        "network"
+    "layout": [
+        [
+            {
+                "widget": "system",
+                "span": 12
+            }
+        ],
+        [
+            {
+                "widget": "network",
+                "span": 12
+            }
+        ]
     ]
 }

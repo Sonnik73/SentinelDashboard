@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <link rel="stylesheet" href="/static/css/style.css?v=8">
 </head>
 
 <body>
@@ -64,7 +64,9 @@
         {% for row in layout %}
         <div class="layout-row" data-columns="{{ row|length }}">
             {% for widget in row %}
-                {% include "widgets/" ~ widget ~ ".html" ignore missing %}
+                <div class="layout-cell span-{{ widget.span | default(12) }}">
+                {% include "widgets/" ~ widget.widget ~ ".html" ignore missing %}
+            </div>
             {% endfor %}
         </div>
         {% endfor %}
@@ -73,7 +75,7 @@
 
 </div>
 
-<script src="/static/js/app.js?v=14"></script>
+<script src="/static/js/app.js?v=16"></script>
 
 <footer class="footer">
     <div>
