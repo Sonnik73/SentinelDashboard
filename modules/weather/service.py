@@ -19,7 +19,7 @@ def fetch_city_weather(city):
 	"timezone": TIMEZONE,
     }
 
-    response = httpx.get(url, params=params, timeout=5)
+    response = httpx.get(url, params=params, timeout=15)
     response.raise_for_status()
 
     data = response.json()
@@ -44,15 +44,17 @@ def get_weather():
         save_cache("weather", weather_data)
         return weather_data
 
-    except Exception:
+    except Exception as error:
         cached_data = load_cache("weather")
 
         if cached_data:
             cached_data["source"] = "cache"
+            cached_data["error"] = str(error)
             return cached_data
 
         return {
             "source": "error",
             "last_sync": None,
+            "error": str(error),
             "cities": [],
         }

@@ -152,8 +152,8 @@ async function loadSettingsDrawer() {
         const data = await response.json();
 
         viewEditor.currentView = data.current.id;
-        viewEditor.originalWidgets = [...data.widgets];
-        viewEditor.currentWidgets = [...data.widgets];
+        viewEditor.originalLayout = JSON.parse(JSON.stringify(data.layout || []));
+        viewEditor.currentLayout = JSON.parse(JSON.stringify(data.layout || []));
         updateEditorState();
 
         document.getElementById("settings-current-view").textContent =
@@ -182,15 +182,20 @@ async function loadSettingsDrawer() {
                 </label>
             `;
         });
-
         container.querySelectorAll("input[type='checkbox']").forEach(input => {
             input.addEventListener("change", () => {
-                viewEditor.currentWidgets = Array.from(
+                const selectedWidgets = Array.from(
                     container.querySelectorAll("input[type='checkbox']:checked")
                 ).map(item => item.dataset.widgetId);
-
+ 
+                viewEditor.currentLayout = selectedWidgets.map(widget => [
+                    {
+                        widget: widget,
+                        span: 12,
+                    }
+                ]);
+ 
                 updateEditorState();
-        applyView();
                 applyView();
             });
         });
@@ -233,10 +238,24 @@ initSettingsDrawer();
 // ------------------------------
 
 const viewEditor = {
-    originalWidgets: [],
-    currentWidgets: [],
+    originalLayout: [],
+    currentLayout: [],
     currentView: "",
 };
+
+function getCurrentWidgets() {
+    return viewEditor.currentLayout
+        .flat()
+        .map(item => item.widget)
+        .filter(Boolean);
+}
+
+function getOriginalWidgets() {
+    return viewEditor.originalLayout
+        .flat()
+        .map(item => item.widget)
+        .filter(Boolean);
+}
 
 function arraysEqual(a, b) {
     return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
@@ -244,8 +263,8 @@ function arraysEqual(a, b) {
 
 function hasUnsavedChanges() {
     return !arraysEqual(
-        viewEditor.originalWidgets,
-        viewEditor.currentWidgets
+        viewEditor.originalLayout,
+        viewEditor.currentLayout
     );
 }
 
@@ -255,7 +274,7 @@ function applyView() {
     document.querySelectorAll("[data-widget]").forEach(card => {
         const widget = card.dataset.widget;
 
-        if (viewEditor.currentWidgets.includes(widget)) {
+        if (getCurrentWidgets().includes(widget)) {
             card.classList.remove("hidden-widget");
         } else {
             card.classList.add("hidden-widget");
@@ -284,7 +303,7 @@ function getCurrentViewLink() {
 
     if (hasUnsavedChanges()) {
         url.searchParams.set("view", "custom");
-        url.searchParams.set("widgets", viewEditor.currentWidgets.join(","));
+        url.searchParams.set("widgets", getCurrentWidgets().join(","));
     } else if (viewEditor.currentView) {
         url.searchParams.set("view", viewEditor.currentView);
         url.searchParams.delete("widgets");
@@ -302,10 +321,10 @@ function initViewEditorActions() {
     if (resetButton) {
         resetButton.addEventListener("click", () => {
 
-            viewEditor.currentWidgets = [...viewEditor.originalWidgets];
+            viewEditor.currentLayout = JSON.parse(JSON.stringify(viewEditor.originalLayout));
 
             document.querySelectorAll("#settings-widgets input").forEach(input => {
-                input.checked = viewEditor.originalWidgets.includes(input.dataset.widgetId);
+                input.checked = getOriginalWidgets().includes(input.dataset.widgetId);
             });
 
             updateEditorState();

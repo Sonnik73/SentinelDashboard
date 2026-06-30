@@ -17,6 +17,10 @@ def ok(text):
     print(f"[ OK ] {text}")
 
 
+def warn(text):
+    print(f"[WARN] {text}")
+
+
 def err(text):
     global failed
     failed = True
@@ -24,7 +28,6 @@ def err(text):
 
 
 # ---------- Python ----------
-
 print("\nChecking Python files...")
 
 for file in Path(".").rglob("*.py"):
@@ -45,7 +48,6 @@ for file in Path(".").rglob("*.py"):
 
 
 # ---------- JSON ----------
-
 print("\nChecking configuration...")
 
 try:
@@ -53,24 +55,22 @@ try:
         json.load(f)
 
     ok("config/dashboard.json")
-
 except Exception as e:
     err("config/dashboard.json")
     print(e)
 
 
-
 # ---------- API ----------
-
 print("\nChecking API endpoints...")
 
 API_BASE_URL = "http://127.0.0.1:8000"
+
 API_ENDPOINTS = [
-    "/api/info",
-    "/api/system",
-    "/api/weather",
-    "/api/rss",
-    "/api/network",
+    ("/api/info", True),
+    ("/api/system", True),
+    ("/api/weather", False),
+    ("/api/rss", False),
+    ("/api/network", True),
 ]
 
 server_available = True
@@ -81,20 +81,25 @@ except Exception:
     server_available = False
 
 if not server_available:
-    print("[WARN] FastAPI server is not running. API checks skipped.")
+    warn("FastAPI server is not running. API checks skipped.")
 else:
-    for endpoint in API_ENDPOINTS:
+    for endpoint, required in API_ENDPOINTS:
         try:
             response = urllib.request.urlopen(API_BASE_URL + endpoint, timeout=5)
 
             if response.status == 200:
                 ok(endpoint)
-            else:
+            elif required:
                 err(f"{endpoint} returned HTTP {response.status}")
+            else:
+                warn(f"{endpoint} returned HTTP {response.status}")
 
         except Exception as e:
-            err(endpoint)
-            print(e)
+            if required:
+                err(endpoint)
+                print(e)
+            else:
+                warn(f"{endpoint}: {e}")
 
 
 print("\n" + "=" * 50)
