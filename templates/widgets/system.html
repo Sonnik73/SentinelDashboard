@@ -1,0 +1,34 @@
+<div class="card" data-widget="system">
+    <h2>🖥 Raspberry Pi</h2>
+
+    <div class="metric-row">
+        <div class="metric-label">CPU</div>
+        <div class="metric-value" id="cpu">{{ cpu_percent }}%</div>
+    </div>
+    <div class="progress">
+        <div class="progress-fill" id="cpu-bar" style="width: {{ cpu_percent }}%;"></div>
+    </div>
+
+    <div class="metric-row">
+        <div class="metric-label">RAM</div>
+        <div class="metric-value" id="ram">{{ memory_percent }}%</div>
+    </div>
+    <div class="progress">
+        <div class="progress-fill" id="ram-bar" style="width: {{ memory_percent }}%;"></div>
+    </div>
+
+    <div class="metric-row">
+        <div class="metric-label">DISK</div>
+        <div class="metric-value" id="disk">{{ disk_percent }}%</div>
+    </div>
+    <div class="progress">
+        <div class="progress-fill" id="disk-bar" style="width: {{ disk_percent }}%;"></div>
+    </div>
+
+    <hr>
+
+    <p>TEMP: <span id="temperature">{{ temperature }}</span></p>
+    <p>UPTIME: <span id="uptime">{{ uptime }}</span></p>
+    <p>Хост: <span id="hostname">{{ hostname }}</span></p>
+    <p>Время: <span id="time">{{ time }}</span></p>
+</div>

@@ -14,11 +14,13 @@ def dashboard(request: Request):
     view_name = request.query_params.get("view")
     view = load_view(view_name)
     visible_widgets = view.get("widgets", [])
+    layout = view.get("layout", [])
 
     data = get_system_metrics()
     data["request"] = request
     data["view"] = view
     data["visible_widgets"] = visible_widgets
+    data["layout"] = layout
 
     return templates.TemplateResponse(
         request=request,

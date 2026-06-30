@@ -211,3 +211,25 @@ body {
 .hidden-widget {
     display: none !important;
 }
+
+.layout-row {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.layout-row[data-columns="1"] {
+    grid-template-columns: 1fr;
+}
+
+.layout-row[data-columns="2"] {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.layout-row[data-columns="3"] {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.layout-row[data-columns="4"] {
+    grid-template-columns: repeat(4, 1fr);
+}
