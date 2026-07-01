@@ -1,3 +1,7 @@
+// ------------------------------
+// Helpers
+// ------------------------------
+
 function updateProgressBar(barId, value) {
     const bar = document.getElementById(barId);
     if (!bar) return;
@@ -13,14 +17,29 @@ function updateProgressBar(barId, value) {
     }
 }
 
+
+// ------------------------------
+// API
+// ------------------------------
+
+async function apiGet(url) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+
+// ------------------------------
+// Widget Updaters
+// ------------------------------
+
 async function updateSystemMetrics() {
     try {
-        const response = await fetch("/api/system");
-        const data = await response.json();
-
-
-
-
+        const data = await apiGet("/api/system");
 
         document.getElementById("time").textContent = data.time;
         document.getElementById("cpu").textContent = data.cpu_percent + "%";
@@ -39,10 +58,10 @@ async function updateSystemMetrics() {
     }
 }
 
+
 async function updateWeather() {
     try {
-        const response = await fetch("/api/weather");
-        const data = await response.json();
+        const data = await apiGet("/api/weather");
 
         document.getElementById("weather-source").textContent =
             data.source === "online" ? "🟢 Онлайн" :
@@ -70,15 +89,10 @@ async function updateWeather() {
     }
 }
 
-updateSystemMetrics();
-updateWeather();
-updateRSS();
-updateNetwork();
-updateBirthdays();
+
 async function updateRSS() {
     try {
-        const response = await fetch("/api/rss");
-        const data = await response.json();
+        const data = await apiGet("/api/rss");
 
         document.getElementById("rss-source").textContent =
             data.source === "online" ? "🟢 Онлайн" :
@@ -106,10 +120,10 @@ async function updateRSS() {
     }
 }
 
+
 async function updateBirthdays() {
     try {
-        const response = await fetch("/api/birthdays");
-        const data = await response.json();
+        const data = await apiGet("/api/birthdays");
 
         const container = document.getElementById("birthdays-list");
         if (!container) return;
@@ -134,6 +148,7 @@ async function updateBirthdays() {
                 </p>
             `;
         });
+
     } catch (error) {
         console.error("Birthdays:", error);
     }
@@ -142,8 +157,7 @@ async function updateBirthdays() {
 
 async function updateNetwork() {
     try {
-        const response = await fetch("/api/network");
-        const data = await response.json();
+        const data = await apiGet("/api/network");
 
         document.getElementById("network-interface").textContent = data.interface;
         document.getElementById("network-ip").textContent = data.ip ?? "---";
@@ -153,7 +167,9 @@ async function updateNetwork() {
         container.innerHTML = "";
 
         data.hosts.forEach(host => {
-            const pingText = host.ping_ms !== null ? `${host.ping_ms} мс` : "нет ответа";
+            const pingText = host.ping_ms !== null
+                ? `${host.ping_ms} мс`
+                : "нет ответа";
 
             container.innerHTML += `
                 <div class="network-item">
@@ -172,20 +188,33 @@ async function updateNetwork() {
 }
 
 
+// ------------------------------
+// Update Scheduler
+// ------------------------------
+
+updateSystemMetrics();
+updateWeather();
+updateRSS();
+updateNetwork();
+updateBirthdays();
+
 setInterval(updateSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
 setInterval(updateRSS, 300000);
 setInterval(updateNetwork, 30000);
 setInterval(updateBirthdays, 3600000);
 
+
+// ------------------------------
+// Settings Drawer
+// ------------------------------
 async function loadSettingsDrawer() {
     try {
         const params = new URLSearchParams(window.location.search);
         const view = params.get("view");
         const url = view ? `/api/views?view=${view}` : "/api/views";
 
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await apiGet(url);
 
         viewEditor.currentView = data.current.id;
         viewEditor.originalLayout = JSON.parse(JSON.stringify(data.layout || []));
