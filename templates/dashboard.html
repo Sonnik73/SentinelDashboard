@@ -69,7 +69,10 @@
         <div class="layout-row" data-columns="{{ row|length }}">
             {% for widget in row %}
                 <div class="layout-cell span-{{ widget.span | default(12) }}">
-                {% include "widgets/" ~ widget.widget ~ ".html" ignore missing %}
+                {% set template = widget_templates.get(widget.widget) %}
+                {% if template %}
+                    {% include template ignore missing %}
+                {% endif %}
             </div>
             {% endfor %}
         </div>

@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 
 from core.system import get_system_metrics
 from modules.views.service import load_view
+from core.loader import get_widget_modules
 
 
 router = APIRouter()
@@ -21,6 +22,11 @@ def dashboard(request: Request):
     data["view"] = view
     data["visible_widgets"] = visible_widgets
     data["layout"] = layout
+    data["widget_templates"] = {
+        module.id: module.template
+        for module in get_widget_modules()
+        if module.template
+    }
 
     return templates.TemplateResponse(
         request=request,
