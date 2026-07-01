@@ -4,5 +4,7 @@
     "icon": "🌐",
     "type": "widget",
     "enabled": true,
-    "refresh": 30
+    "refresh": 30,
+    "template": "templates/widgets/network.html",
+    "service": "service.py"
 }

@@ -4,5 +4,7 @@
     "icon": "🌤",
     "type": "widget",
     "enabled": true,
-    "refresh": 600
+    "refresh": 600,
+    "template": "templates/widgets/weather.html",
+    "service": "service.py"
 }

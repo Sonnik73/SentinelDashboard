@@ -13,6 +13,9 @@ def get_widgets_data():
             "icon": widget.icon,
             "enabled": widget.enabled,
             "refresh": widget.refresh,
+            "template": widget.template,
+            "service": widget.service,
+            "api": widget.api,
         }
         for widget in get_widgets()
     ]

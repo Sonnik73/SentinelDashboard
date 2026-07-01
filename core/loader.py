@@ -15,6 +15,9 @@ class ModuleInfo:
     enabled: bool = True
     refresh: int = 60
     path: str = ""
+    template: str | None = None
+    service: str | None = None
+    api: str | None = None
 
 
 def load_module_manifest(manifest_file: Path) -> ModuleInfo:
@@ -31,6 +34,9 @@ def load_module_manifest(manifest_file: Path) -> ModuleInfo:
         enabled=manifest.get("enabled", True),
         refresh=manifest.get("refresh", 60),
         path=str(manifest_file.parent),
+        template=manifest.get("template"),
+        service=manifest.get("service"),
+        api=manifest.get("api"),
     )
 
 
