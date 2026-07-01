@@ -4,18 +4,33 @@
         [
             {
                 "widget": "system",
-                "span": 12
+                "span": 3
+            },
+            {
+                "widget": "weather",
+                "span": 3
+            },
+            {
+                "widget": "rss",
+                "span": 3
+            },
+            {
+                "widget": "network",
+                "span": 3
             }
         ],
         [
             {
-                "widget": "network",
-                "span": 6
-            },
-            {
                 "widget": "birthdays",
-                "span": 6
+                "span": 3
             }
         ]
+    ],
+    "widgets": [
+        "system",
+        "weather",
+        "rss",
+        "network",
+        "birthdays"
     ]
 }

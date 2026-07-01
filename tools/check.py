@@ -50,14 +50,21 @@ for file in Path(".").rglob("*.py"):
 # ---------- JSON ----------
 print("\nChecking configuration...")
 
-try:
-    with open("config/dashboard.json", encoding="utf-8") as f:
-        json.load(f)
+json_files = [
+    Path("config/dashboard.json"),
+    *sorted(Path("modules").glob("*/manifest.json")),
+    *sorted(Path("config/views").glob("*.json")),
+]
 
-    ok("config/dashboard.json")
-except Exception as e:
-    err("config/dashboard.json")
-    print(e)
+for json_file in json_files:
+    try:
+        with open(json_file, encoding="utf-8") as f:
+            json.load(f)
+
+        ok(json_file)
+    except Exception as e:
+        err(json_file)
+        print(e)
 
 
 # ---------- API ----------

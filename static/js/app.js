@@ -468,11 +468,11 @@ function getCurrentViewLink() {
 }
 
 function initViewEditorActions() {
-    const copyButton = document.getElementById("copy-view-link");
+    const copyButton = document.getElementById("generate-view-link");
     const resetButton = document.getElementById("reset-view");
     const saveButton = document.getElementById("save-view");
 
-    if (!copyButton) return;
+    if (!copyButton && !resetButton && !saveButton) return;
 
     if (resetButton) {
         resetButton.addEventListener("click", () => {
@@ -516,11 +516,11 @@ function initViewEditorActions() {
                 updateEditorState();
                 applyView();
 
-                saveButton.textContent = "✅ Сохранено";
+                saveButton.textContent = "✅  Сохранено";
 
                 setTimeout(() => {
-                    saveButton.textContent = "💾 Сохранить";
-                }, 2000);
+                    window.location.reload();
+                }, 800);
             } catch (error) {
                 console.error("Save layout:", error);
                 saveButton.textContent = "⚠️ Ошибка сохранения";
