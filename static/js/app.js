@@ -74,6 +74,7 @@ updateSystemMetrics();
 updateWeather();
 updateRSS();
 updateNetwork();
+updateBirthdays();
 async function updateRSS() {
     try {
         const response = await fetch("/api/rss");
@@ -104,6 +105,40 @@ async function updateRSS() {
         console.error("RSS:", error);
     }
 }
+
+async function updateBirthdays() {
+    try {
+        const response = await fetch("/api/birthdays");
+        const data = await response.json();
+
+        const container = document.getElementById("birthdays-list");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        if (!data.items || data.items.length === 0) {
+            container.innerHTML = `<p class="small">Нет записей</p>`;
+            return;
+        }
+
+        data.items.slice(0, 5).forEach(item => {
+            const days = item.days_until === 0
+                ? "сегодня"
+                : `через ${item.days_until} дн.`;
+
+            container.innerHTML += `
+                <p>
+                    <b>${item.name}</b><br>
+                    🎂 ${item.date} — ${days}<br>
+                    <span class="small">${item.note ?? ""}</span>
+                </p>
+            `;
+        });
+    } catch (error) {
+        console.error("Birthdays:", error);
+    }
+}
+
 
 async function updateNetwork() {
     try {
@@ -141,6 +176,7 @@ setInterval(updateSystemMetrics, 1000);
 setInterval(updateWeather, 600000);
 setInterval(updateRSS, 300000);
 setInterval(updateNetwork, 30000);
+setInterval(updateBirthdays, 3600000);
 
 async function loadSettingsDrawer() {
     try {

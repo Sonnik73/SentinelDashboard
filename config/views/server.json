@@ -10,7 +10,11 @@
         [
             {
                 "widget": "network",
-                "span": 12
+                "span": 6
+            },
+            {
+                "widget": "birthdays",
+                "span": 6
             }
         ]
     ]

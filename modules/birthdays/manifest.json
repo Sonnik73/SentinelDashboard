@@ -1,0 +1,8 @@
+{
+    "id": "birthdays",
+    "title": "Birthdays",
+    "icon": "🎂",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 3600
+}

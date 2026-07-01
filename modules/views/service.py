@@ -96,9 +96,13 @@ def save_view_layout(name: str, layout: list):
 
     view = normalize_view(view)
 
-    with open(view_file, "w", encoding="utf-8") as file:
-        json.dump(view, file, ensure_ascii=False, indent=4)
+    view_to_save = dict(view)
+    view_to_save.pop("id", None)
 
+    with open(view_file, "w", encoding="utf-8") as file:
+        json.dump(view_to_save, file, ensure_ascii=False, indent=4)
+
+    view["id"] = view_name
     return view
 
 def normalize_view_name(name: str) -> str:
