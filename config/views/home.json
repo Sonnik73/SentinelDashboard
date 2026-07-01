@@ -20,19 +20,12 @@
                 "widget": "network",
                 "span": 6
             }
-        ],
-        [
-            {
-                "widget": "birthdays",
-                "span": 12
-            }
         ]
     ],
     "widgets": [
         "system",
         "weather",
         "rss",
-        "network",
-        "birthdays"
+        "network"
     ]
 }

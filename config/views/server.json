@@ -4,25 +4,27 @@
         [
             {
                 "widget": "system",
-                "span": 3
+                "span": 6
             },
             {
                 "widget": "weather",
-                "span": 3
-            },
+                "span": 6
+            }
+        ],
+        [
             {
                 "widget": "rss",
-                "span": 3
+                "span": 6
             },
             {
                 "widget": "network",
-                "span": 3
+                "span": 6
             }
         ],
         [
             {
                 "widget": "birthdays",
-                "span": 3
+                "span": 12
             }
         ]
     ],
