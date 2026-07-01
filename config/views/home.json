@@ -1,6 +1,29 @@
 {
     "title": "Home",
+    "layout": [
+        [
+            {
+                "widget": "system",
+                "span": 6
+            },
+            {
+                "widget": "weather",
+                "span": 6
+            }
+        ],
+        [
+            {
+                "widget": "rss",
+                "span": 6
+            },
+            {
+                "widget": "network",
+                "span": 6
+            }
+        ]
+    ],
     "widgets": [
+        "system",
         "weather",
         "rss",
         "network"
