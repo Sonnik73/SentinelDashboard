@@ -1,0 +1,8 @@
+{
+    "id": "example",
+    "title": "Example Widget",
+    "icon": "🧩",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 60
+}
