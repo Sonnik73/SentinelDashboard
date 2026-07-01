@@ -174,27 +174,30 @@ async function loadSettingsDrawer() {
                     >
                     <span>${widget.icon} ${widget.title}</span>
                     <select class="widget-span-select" data-widget-span="${widget.id}">
-                        <option value="3">1/4</option>
-                        <option value="4">1/3</option>
-                        <option value="6">1/2</option>
-                        <option value="12">Вся ширина</option>
+                        <option value="3" ${getWidgetSpan(widget.id) === 3 ? "selected" : ""}>1/4</option>
+                        <option value="4" ${getWidgetSpan(widget.id) === 4 ? "selected" : ""}>1/3</option>
+                        <option value="6" ${getWidgetSpan(widget.id) === 6 ? "selected" : ""}>1/2</option>
+                        <option value="12" ${getWidgetSpan(widget.id) === 12 ? "selected" : ""}>Вся ширина</option>
                     </select>
                 </label>
             `;
         });
         container.querySelectorAll("input[type='checkbox']").forEach(input => {
             input.addEventListener("change", () => {
-                const selectedWidgets = Array.from(
-                    container.querySelectorAll("input[type='checkbox']:checked")
-                ).map(item => item.dataset.widgetId);
+                viewEditor.currentLayout = buildLayoutFromSettings(container);
+                updateEditorState();
+                applyView();
+            });
+        });
  
-                viewEditor.currentLayout = selectedWidgets.map(widget => [
-                    {
-                        widget: widget,
-                        span: 12,
-                    }
-                ]);
+        container.querySelectorAll(".widget-span-select").forEach(select => {
+            select.addEventListener("change", () => {
+                setWidgetSpan(
+                    select.dataset.widgetSpan,
+                    Number(select.value)
+                );
  
+                viewEditor.currentLayout = buildLayoutFromSettings(container);
                 updateEditorState();
                 applyView();
             });
@@ -270,15 +273,107 @@ function hasUnsavedChanges() {
 
 
 
-function applyView() {
-    document.querySelectorAll("[data-widget]").forEach(card => {
-        const widget = card.dataset.widget;
+function findLayoutItem(widgetId) {
+    return viewEditor.currentLayout
+        .flat()
+        .find(item => item.widget === widgetId);
+}
 
-        if (getCurrentWidgets().includes(widget)) {
-            card.classList.remove("hidden-widget");
-        } else {
-            card.classList.add("hidden-widget");
+function getWidgetSpan(widgetId) {
+    const item = findLayoutItem(widgetId);
+    return item ? item.span : 12;
+}
+
+function setWidgetSpan(widgetId, span) {
+    const item = findLayoutItem(widgetId);
+    if (item) {
+        item.span = span;
+    }
+}
+
+function buildLayoutFromSettings(container) {
+    const selected = Array.from(
+        container.querySelectorAll("input[type='checkbox']:checked")
+    ).map(input => input.dataset.widgetId);
+
+    const rows = [];
+    let currentRow = [];
+    let currentWidth = 0;
+
+    selected.forEach(widgetId => {
+        const select = container.querySelector(`[data-widget-span="${widgetId}"]`);
+        const span = select ? Number(select.value) : getWidgetSpan(widgetId);
+
+        if (currentWidth + span > 12 && currentRow.length > 0) {
+            rows.push(currentRow);
+            currentRow = [];
+            currentWidth = 0;
         }
+
+        currentRow.push({
+            widget: widgetId,
+            span: span,
+        });
+
+        currentWidth += span;
+    });
+
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+
+    return rows;
+}
+
+function applyView() {
+    const grid = document.querySelector(".grid");
+    if (!grid) return;
+
+    const cells = {};
+
+    document.querySelectorAll(".layout-cell").forEach(cell => {
+        const card = cell.querySelector("[data-widget]");
+        if (card) {
+            cells[card.dataset.widget] = cell;
+        }
+    });
+
+    grid.innerHTML = "";
+
+    viewEditor.currentLayout.forEach(row => {
+        const rowElement = document.createElement("div");
+        rowElement.className = "layout-row";
+        rowElement.dataset.columns = row.length;
+
+        row.forEach(item => {
+            const widget = item.widget;
+            const span = item.span || 12;
+            const cell = cells[widget];
+
+            if (!cell) return;
+
+            cell.classList.remove(
+                "span-1",
+                "span-2",
+                "span-3",
+                "span-4",
+                "span-6",
+                "span-8",
+                "span-9",
+                "span-12"
+            );
+
+            cell.classList.add(`span-${span}`);
+
+            const card = cell.querySelector("[data-widget]");
+            if (card) {
+                card.classList.remove("hidden-widget");
+            }
+
+            rowElement.appendChild(cell);
+        });
+
+        grid.appendChild(rowElement);
     });
 }
 
@@ -291,9 +386,13 @@ function updateEditorState() {
     if (hasUnsavedChanges()) {
         state.textContent = "🟡 Есть несохранённые изменения";
         if (reset) reset.disabled = false;
+        const save = document.getElementById("save-view");
+        if (save) save.disabled = false;
     } else {
         state.textContent = "🟢 Без изменений";
         if (reset) reset.disabled = true;
+        const save = document.getElementById("save-view");
+        if (save) save.disabled = true;
     }
 }
 
@@ -315,6 +414,7 @@ function getCurrentViewLink() {
 function initViewEditorActions() {
     const copyButton = document.getElementById("copy-view-link");
     const resetButton = document.getElementById("reset-view");
+    const saveButton = document.getElementById("save-view");
 
     if (!copyButton) return;
 
@@ -328,6 +428,51 @@ function initViewEditorActions() {
             });
 
             updateEditorState();
+            applyView();
+        });
+    }
+
+    if (saveButton) {
+        saveButton.addEventListener("click", async () => {
+            saveButton.textContent = "⏳ Сохранение...";
+
+            try {
+                const response = await fetch("/api/views/save", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        view: viewEditor.currentView,
+                        layout: viewEditor.currentLayout,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                viewEditor.originalLayout = JSON.parse(JSON.stringify(data.layout));
+                viewEditor.currentLayout = JSON.parse(JSON.stringify(data.layout));
+
+                updateEditorState();
+                applyView();
+
+                saveButton.textContent = "✅ Сохранено";
+
+                setTimeout(() => {
+                    saveButton.textContent = "💾 Сохранить";
+                }, 2000);
+            } catch (error) {
+                console.error("Save layout:", error);
+                saveButton.textContent = "⚠️ Ошибка сохранения";
+
+                setTimeout(() => {
+                    saveButton.textContent = "💾 Сохранить";
+                }, 2000);
+            }
         });
     }
 

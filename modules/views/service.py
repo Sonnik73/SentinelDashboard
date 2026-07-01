@@ -80,3 +80,24 @@ def load_view(name: str | None = None):
 def get_view_widgets(name: str | None = None):
     view = load_view(name)
     return view.get("widgets", [])
+
+def save_view_layout(name: str, layout: list):
+    view_name = name or DEFAULT_VIEW
+    view_file = VIEWS_DIR / f"{view_name}.json"
+
+    if not view_file.exists():
+        raise FileNotFoundError(f"View not found: {view_name}")
+
+    with open(view_file, "r", encoding="utf-8") as file:
+        view = json.load(file)
+
+    view["layout"] = layout
+    view.pop("widgets", None)
+
+    view = normalize_view(view)
+
+    with open(view_file, "w", encoding="utf-8") as file:
+        json.dump(view, file, ensure_ascii=False, indent=4)
+
+    return view
+

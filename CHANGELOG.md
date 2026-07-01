@@ -4,6 +4,24 @@
 
 ---
 
+## v1.0.6
+
+### Added
+- Layout Editor save action
+- Live span preview in Settings Drawer
+- Automatic row packing for dashboard widgets
+- View layout saving through API
+
+### Changed
+- View Editor now uses layout as the main state model
+- Improved resilience of project checks for external API timeouts
+
+### Fixed
+- Restored live data updates after layout editor refactor
+- Added weather error reporting when falling back to cache
+
+---
+
 ## v1.0.0
 
 ### Added

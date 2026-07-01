@@ -1,10 +1,14 @@
 from modules.network.service import get_network_status
-from modules.views.service import list_views, load_view
+from modules.views.service import (
+    list_views,
+    load_view,
+    save_view_layout,
+)
 from core.version import get_version
 from core.config import get_section
 from modules.rss.service import get_rss
 from core.widgets import get_widgets_data
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Body
 
 from core.system import get_system_metrics
 from modules.weather.service import get_weather
@@ -70,4 +74,18 @@ def api_views(request: Request):
         "available_widgets": available_widgets,
         "widgets": current_view.get("widgets", []),
         "layout": current_view.get("layout", []),
+    }
+
+
+@router.post("/views/save")
+def api_save_view(payload: dict = Body(...)):
+    view = save_view_layout(
+        payload["view"],
+        payload["layout"],
+    )
+
+    return {
+        "status": "ok",
+        "view": view["id"],
+        "layout": view["layout"],
     }
