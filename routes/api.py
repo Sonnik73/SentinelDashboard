@@ -1,4 +1,3 @@
-from modules.birthdays.service import get_birthdays
 from modules.network.service import get_network_status
 from modules.views.service import (
     list_views,
@@ -91,7 +90,4 @@ def api_save_view(payload: dict = Body(...)):
         "layout": view["layout"],
     }
 
-@router.get("/birthdays")
-def api_birthdays():
-    return get_birthdays()
 

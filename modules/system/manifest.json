@@ -4,6 +4,5 @@
     "icon": "🖥",
     "type": "widget",
     "enabled": true,
-    "refresh": 1,
-    "template": "templates/widgets/system.html"
+    "refresh": 1
 }

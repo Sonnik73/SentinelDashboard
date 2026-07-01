@@ -4,7 +4,5 @@
     "icon": "🎂",
     "type": "widget",
     "enabled": true,
-    "refresh": 3600,
-    "template": "templates/widgets/birthdays.html",
-    "service": "service.py"
+    "refresh": 3600
 }

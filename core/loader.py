@@ -26,6 +26,12 @@ def load_module_manifest(manifest_file: Path) -> ModuleInfo:
 
     module_id = manifest["id"]
 
+    module_path = manifest_file.parent
+
+    default_template = f"widgets/{module_id}.html"
+    default_service = "service.py" if (module_path / "service.py").exists() else None
+    default_api = "api.py" if (module_path / "api.py").exists() else None
+
     return ModuleInfo(
         id=module_id,
         title=manifest.get("title", module_id),
@@ -33,10 +39,10 @@ def load_module_manifest(manifest_file: Path) -> ModuleInfo:
         type=manifest.get("type", "module"),
         enabled=manifest.get("enabled", True),
         refresh=manifest.get("refresh", 60),
-        path=str(manifest_file.parent),
-        template=manifest.get("template"),
-        service=manifest.get("service"),
-        api=manifest.get("api"),
+        path=str(module_path),
+        template=manifest.get("template", default_template),
+        service=manifest.get("service", default_service),
+        api=manifest.get("api", default_api),
     )
 
 

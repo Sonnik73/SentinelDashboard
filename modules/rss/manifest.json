@@ -4,7 +4,5 @@
     "icon": "📰",
     "type": "widget",
     "enabled": true,
-    "refresh": 300,
-    "template": "templates/widgets/rss.html",
-    "service": "service.py"
+    "refresh": 300
 }
