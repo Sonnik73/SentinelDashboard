@@ -1,0 +1,8 @@
+{
+    "id": "rss",
+    "title": "News",
+    "icon": "📰",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 300
+}

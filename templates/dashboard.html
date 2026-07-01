@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=8">
+    <link rel="stylesheet" href="/static/css/style.css?v=9">
 </head>
 
 <body>
@@ -20,6 +20,10 @@
     <div class="settings-section">
         <p class="small">Current View</p>
         <h3 id="settings-current-view">---</h3>
+
+        <select id="settings-view-select" class="settings-view-select">
+            <option value="">Loading...</option>
+        </select>
 
         <p id="settings-state" class="small">
             🟢 Без изменений
@@ -75,7 +79,7 @@
 
 </div>
 
-<script src="/static/js/app.js?v=19"></script>
+<script src="/static/js/app.js?v=20"></script>
 
 <footer class="footer">
     <div>

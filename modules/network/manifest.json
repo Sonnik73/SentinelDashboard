@@ -1,0 +1,8 @@
+{
+    "id": "network",
+    "title": "Network",
+    "icon": "🌐",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 30
+}

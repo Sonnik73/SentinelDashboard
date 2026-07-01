@@ -1,0 +1,8 @@
+{
+    "id": "system",
+    "title": "Raspberry Pi",
+    "icon": "🖥",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 1
+}

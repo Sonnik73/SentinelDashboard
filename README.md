@@ -1,144 +1,145 @@
-SentinelDashboard
+# SentinelDashboard
 
-«Modular information dashboard for Raspberry Pi and Linux servers»
+> Modular information dashboard for Raspberry Pi and Linux servers.
 
-SentinelDashboard — это лёгкая модульная информационная панель, предназначенная для постоянного отображения важных данных на отдельном экране или планшете.
+SentinelDashboard is a lightweight, modular dashboard platform designed for Raspberry Pi, Linux servers and wall-mounted information displays.
 
-Проект разрабатывается с приоритетом стабильности, простоты настройки и расширяемой архитектуры.
+The project focuses on:
 
----
-
-Основные возможности
-
-- 🖥 Мониторинг состояния системы
-  
-  - загрузка CPU
-  - использование памяти
-  - дисковое пространство
-  - температура
-  - время работы
-  - имя хоста
-
-- 🌤 Погодный модуль
-
-- 📰 RSS-новости
-
-- 🌐 Мониторинг сети
-
-- ⚙️ Редактор представлений (Views Editor)
-
-- 👁 Live Preview без перезагрузки страницы
-
-- 🔗 Представления, которыми можно делиться через URL
+- modular architecture
+- offline-first operation
+- simple JSON configuration
+- live layout editing
+- long-term maintainability
 
 ---
 
-Архитектура проекта
+# Features
+
+## System Monitoring
+
+- CPU
+- Memory
+- Disk usage
+- Temperature
+- Uptime
+- Hostname
+
+## Information Widgets
+
+- 🌤 Weather
+- 📰 RSS News
+- 🌐 Network Monitoring
+- 🎂 Birthdays
+- 📷 Cameras
+
+## Dashboard Engine
+
+- Multiple dashboard views
+- Layout Engine
+- Live Preview
+- Widget span editor
+- Automatic row packing
+- JSON-based layouts
+- Shareable dashboard links
+
+---
+
+# Architecture
+
+Browser
+
+↓
+
+FastAPI
+
+↓
+
+Routes
+
+↓
+
+Modules
+
+↓
+
+Core
+
+For a detailed description see:
+
+- docs/ARCHITECTURE.md
+
+---
+
+# Project Structure
 
 core/
-    Базовая инфраструктура
-
 modules/
-    Независимые функциональные модули
-
 routes/
-    FastAPI endpoints
-
 config/
-    Конфигурация проекта
-
 templates/
-    HTML
-
 static/
-    JavaScript / CSS
-
 tools/
-    Инструменты разработки
+docs/
 
 ---
 
-Быстрый запуск
+# Quick Start
 
+```bash
 git clone git@github.com:Sonnik73/SentinelDashboard.git
+
 cd SentinelDashboard
 
 python -m venv .venv
+
 source .venv/bin/activate
 
 pip install -r requirements.txt
 
 uvicorn app:app --host 0.0.0.0 --port 8000
-
-После запуска открой:
-
-http://<IP Raspberry Pi>:8000
-
-Например:
-
+Open:
+http://<RaspberryPi-IP>:8000
+Example:
 http://192.168.88.107:8000
-
----
-
-Представления (Views)
-
-Каждое представление описывается отдельным JSON-файлом.
-
-config/views/
-
-Пример:
-
-{
-    "title": "Server",
-    "widgets": [
-        "system",
-        "network"
-    ]
-}
-
-Поддерживаемые представления:
-
-/?view=default
-/?view=home
-/?view=server
-/?view=wall
-
----
-
-Разработка
-
-Перед каждым коммитом рекомендуется выполнить:
-
+Documentation
+INSTALL.md
+DEVELOPMENT.md
+ARCHITECTURE.md
+ROADMAP.md
+Development
+Before every commit:
 python tools/check.py
+Recommended workflow:
+One feature
 
-После успешной проверки:
+↓
 
-git add .
-git commit -m "<message>"
-git push
+Validation
 
----
+↓
 
-Road to Stability
+Commit
 
-Проект развивается небольшими инженерными спринтами.
+↓
 
-Основные принципы:
-
-- один законченный спринт — один коммит;
-- небольшие безопасные изменения;
-- сначала архитектура, затем код;
-- минимум технического долга;
-- обратная совместимость.
-
----
-
-Статус проекта
-
-Текущая стадия разработки:
-
-Road to Stability
-
-Следующая цель:
-
-v1.0.0 — First Stable
+Push
+Current Status
+Current Version
+v1.0.6
+Completed
+Stable v1
+Widget System
+View Engine
+Layout Engine
+Live Preview
+Layout Editor
+Next Target
+v2.0
+Drag & Drop
+View Manager
+Responsive Layout
+Widget Framework
+Plugin Architecture
+License
+MIT License

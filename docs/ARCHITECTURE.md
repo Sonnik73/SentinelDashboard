@@ -1,20 +1,21 @@
-SentinelDashboard Architecture
+# SentinelDashboard Architecture
 
-Философия проекта
+## Philosophy
 
-SentinelDashboard — локальная модульная информационная панель.
+SentinelDashboard is a modular local dashboard platform.
 
-Основные принципы:
+Core principles:
 
-- модульность;
-- простота;
-- автономная работа;
-- отсутствие обязательной регистрации;
-- конфигурация через JSON и URL.
+- Modular architecture
+- Offline-first operation
+- Simple configuration
+- JSON-based layouts
+- Live preview editing
+- Small safe development iterations
 
 ---
 
-Архитектура
+# High Level Architecture
 
 Browser
     │
@@ -28,43 +29,144 @@ Routes
 Modules
     │
     ▼
-Core
+Core Services
 
 ---
 
-Структура проекта
+# Project Structure
 
 core/
+    Shared services
+    Configuration
+    Cache
+    Widgets
+    Version
+    Time
+
 modules/
+    Weather
+    RSS
+    Network
+    Views
+
 routes/
-config/
+    Dashboard
+    REST API
+
 templates/
+    Dashboard template
+    Widget templates
+
 static/
+    JavaScript
+    CSS
+
+config/
+    Dashboard configuration
+    View definitions
+
 tools/
+    Project validation
+
 docs/
+    Documentation
 
 ---
 
-Views
+# View Engine
 
-Каждое представление описывается JSON-файлом.
+Each dashboard view is stored as an individual JSON document.
 
-Views определяют только состав отображаемых виджетов.
+Example:
+
+View
+    │
+    ├── Layout
+    │
+    ├── Widgets
+    │
+    └── Metadata
+
+The View Engine is responsible for:
+
+- loading views
+- normalizing layouts
+- saving layouts
+- exposing views through the REST API
 
 ---
 
-Live Preview
+# Layout Engine
 
-Редактор представлений мгновенно изменяет интерфейс без перезагрузки страницы.
+The Layout Engine is the foundation of SentinelDashboard v2.
+
+Each layout consists of rows.
+
+Each row contains widgets.
+
+Each widget owns its own width (span).
+
+Example:
+
+Layout
+
+├── Row
+│     └── Widget(span=12)
+
+├── Row
+│     ├── Widget(span=6)
+│     └── Widget(span=6)
+
+└── Row
+      ├── Widget(span=4)
+      ├── Widget(span=4)
+      └── Widget(span=4)
+
+The engine supports:
+
+- live preview
+- automatic row packing
+- span editing
+- JSON serialization
 
 ---
 
-Road to Stability
+# Widget System
 
-Проект развивается небольшими безопасными спринтами.
+Each widget is an independent template.
 
-Каждый спринт:
+templates/widgets/
 
-- имеет одну цель;
-- заканчивается коммитом;
-- проходит проверку "python tools/check.py".
+Examples:
+
+- system
+- weather
+- rss
+- network
+- birthdays
+- cameras
+
+Widgets are reusable and independent.
+
+---
+
+# Live Preview
+
+Layout changes are immediately reflected in the browser without reloading the page.
+
+The editor works entirely with the Layout Model.
+
+---
+
+# Development Workflow
+
+Every sprint follows the same process:
+
+1. One feature
+2. Small patches
+3. Validation (`python tools/check.py`)
+4. Commit
+5. Push
+
+This approach minimizes regressions and keeps the project stable.
+

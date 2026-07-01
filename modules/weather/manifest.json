@@ -1,0 +1,8 @@
+{
+    "id": "weather",
+    "title": "Weather",
+    "icon": "🌤",
+    "type": "widget",
+    "enabled": true,
+    "refresh": 600
+}

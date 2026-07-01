@@ -101,3 +101,46 @@ def save_view_layout(name: str, layout: list):
 
     return view
 
+def normalize_view_name(name: str) -> str:
+    return (
+        name.strip()
+        .lower()
+        .replace(" ", "-")
+        .replace("_", "-")
+    )
+
+
+def create_view(name: str, title: str | None = None):
+    view_name = normalize_view_name(name)
+
+    if not view_name:
+        raise ValueError("View name is required")
+
+    if not view_name.replace("-", "").isalnum():
+        raise ValueError("View name may contain only letters, numbers and hyphens")
+
+    view_file = VIEWS_DIR / f"{view_name}.json"
+
+    if view_file.exists():
+        raise FileExistsError(f"View already exists: {view_name}")
+
+    view = {
+        "title": title or view_name.title(),
+        "layout": [
+            [
+                {
+                    "widget": "system",
+                    "span": 12,
+                }
+            ]
+        ],
+    }
+
+    VIEWS_DIR.mkdir(parents=True, exist_ok=True)
+
+    with open(view_file, "w", encoding="utf-8") as file:
+        json.dump(view, file, ensure_ascii=False, indent=4)
+
+    view["id"] = view_name
+    return normalize_view(view)
+

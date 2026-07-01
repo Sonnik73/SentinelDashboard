@@ -159,6 +159,26 @@ async function loadSettingsDrawer() {
         document.getElementById("settings-current-view").textContent =
             `${data.current.title} (${data.current.id})`;
 
+        const viewSelect = document.getElementById("settings-view-select");
+
+        if (viewSelect) {
+            viewSelect.innerHTML = "";
+
+            data.available_views.forEach(viewId => {
+                const option = document.createElement("option");
+                option.value = viewId;
+                option.textContent = viewId;
+                option.selected = viewId === data.current.id;
+                viewSelect.appendChild(option);
+            });
+
+            viewSelect.onchange = () => {
+                const url = new URL(window.location.href);
+                url.searchParams.set("view", viewSelect.value);
+                window.location.href = url.toString();
+            };
+        }
+
         const container = document.getElementById("settings-widgets");
         container.innerHTML = "";
 
