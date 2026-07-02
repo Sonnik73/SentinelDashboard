@@ -17,7 +17,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 
 ## Stage B — Repository Cleanup
 
-- [ ] Review examples/example_widget/ for accuracy against the current module convention
+- [x] Review examples/example_widget/ for accuracy against the current module convention (found and fixed: missing widget template, inaccurate install instructions)
 - [x] LICENSE present and correct (MIT)
 - [x] CHANGELOG.md kept in sync with VERSION
 - [x] VERSION file kept in sync with commits
@@ -30,6 +30,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [ ] JavaScript — review static/js/*.js for consistency (vanilla JS only, no leftover dead code)
 - [ ] Known candidate: `create_view()` in modules/views/service.py is implemented but not wired to any API endpoint — decide whether to expose it or remove it
 - [ ] Confirm the `system` module's special-cased wiring (no service.py/api.py of its own) is intentional and documented, or refactor to match the standard module convention
+- [ ] The `refresh` field in every module's manifest.json is not read anywhere in the frontend — refresh intervals are hardcoded per-widget in static/js/widgets.js instead. Decide whether to wire manifest refresh values into the frontend or remove the unused field from manifests
 
 ## Stage D — UX Audit
 
