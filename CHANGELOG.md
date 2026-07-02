@@ -4,6 +4,14 @@
 
 ---
 
+## v1.2.9
+
+### Fixed
+- ROADMAP.md no longer lists already-shipped features (Widget Manifest System, Automatic Module Discovery, Birthdays Widget) under the unreleased Version 2.0 section
+- Added missing Modular API Architecture to Completed
+
+---
+
 ## v1.2.8
 
 ### Added
