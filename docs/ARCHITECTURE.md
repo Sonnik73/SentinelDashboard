@@ -36,17 +36,21 @@ Core Services
 # Project Structure
 
 core/
-    Shared services
+    Module discovery (loader)
+    Automatic API loading (module_api)
     Configuration
     Cache
+    System metrics
     Widgets
     Version
     Time
 
 modules/
+    System
     Weather
     RSS
     Network
+    Birthdays
     Views
 
 routes/
@@ -70,6 +74,32 @@ tools/
 
 docs/
     Documentation
+
+---
+
+# Module System
+
+Modules are discovered automatically — there is no manual registration.
+
+On startup, `core/loader.py` scans:
+
+```
+modules/*/manifest.json
+```
+
+Each manifest declares an `id`, `title`, `icon`, `type`, and optional `refresh` interval. Everything else follows **convention over configuration**:
+
+| File | Default if not set in manifest |
+|---|---|
+| Template | `templates/widgets/<id>.html` |
+| Service | `service.py`, if present in the module folder |
+| API | `api.py`, if present in the module folder |
+
+If a module folder contains an `api.py` exposing a `router = APIRouter()`, `core/module_api.py` imports it automatically and mounts it under `/api`. No manual wiring is required to add a new module — drop a folder with a `manifest.json` into `modules/` and it is picked up on the next restart.
+
+The `system` module is a special case: it is registered for widget display purposes via its manifest, but its data comes from `core/system.py` through a dedicated core route (`/api/system`) rather than a per-module `service.py`/`api.py` pair.
+
+See `examples/example_widget/` for a minimal module template.
 
 ---
 
@@ -98,7 +128,7 @@ The View Engine is responsible for:
 
 # Layout Engine
 
-The Layout Engine is the foundation of SentinelDashboard v2.
+The Layout Engine is the foundation of the dashboard's view system, delivered as part of the Stable v1 line.
 
 Each layout consists of rows.
 
@@ -144,7 +174,7 @@ Examples:
 - rss
 - network
 - birthdays
-- cameras
+- cameras *(placeholder — template only, no module/service behind it yet)*
 
 Widgets are reusable and independent.
 
