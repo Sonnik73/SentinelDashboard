@@ -4,6 +4,18 @@
 
 ---
 
+## v1.2.7
+
+### Added
+- Documented the Module System in ARCHITECTURE.md (automatic discovery, convention over configuration, API auto-loading)
+
+### Fixed
+- core/ and modules/ file lists in ARCHITECTURE.md now match the actual codebase (loader, module_api, system.py, birthdays module, system module)
+- Layout Engine description no longer implies it belongs to an unreleased v2
+- cameras widget flagged as placeholder (template only, not yet implemented)
+
+---
+
 ## v1.2.6
 
 ### Added
