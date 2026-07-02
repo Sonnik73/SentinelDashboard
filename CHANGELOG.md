@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.3
+
+### Investigated
+- api.open-meteo.com has been unreachable from the deployment network for 5+ days. Diagnostics showed the issue is specific to certain foreign hosting ranges (Open-Meteo, Met.no, wttr.in, WeatherAPI.com, OpenWeatherMap all unreachable), while Russian-hosted sites and major CDNs work fine. Evaluated Yandex Weather API (reachable, free, but capped at 50 requests/day) and rp5.ru (reachable, no limit, but no self-serve API) as replacements. Decision deferred; documented in RELEASE_CHECKLIST.md for follow-up
+
+---
+
 ## v1.3.2
 
 ### Changed
