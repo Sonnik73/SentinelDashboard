@@ -4,6 +4,20 @@
 
 ---
 
+## v1.3.2
+
+### Changed
+- available_widgets in /api/views is now sourced dynamically from core.widgets.get_widgets_data() (automatic module discovery) instead of the static config/dashboard.json widgets block
+
+### Fixed
+- /api/weather could hang up to 45 seconds (3 cities x 15s timeout) when the network is unreachable before falling back to cache. Reduced per-city HTTP timeout from 15s to 5s (worst case now ~15s)
+- Removed cameras from the selectable widget list in Settings — it had no backing module and silently did nothing when added to a layout
+
+### Removed
+- Dead config/dashboard.json blocks: dashboard (title/refresh, never read) and widgets (duplicated manifest.json title/icon data, now fully replaced by dynamic sourcing)
+
+---
+
 ## v1.3.1
 
 ### Fixed
