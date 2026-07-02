@@ -4,6 +4,15 @@
 
 ---
 
+## v1.2.5
+
+### Changed
+- Rewrote DEVELOPMENT.md with proper markdown structure
+- Documented tools/check.py behavior (Python syntax, JSON config, optional API checks)
+- Established versioned commit convention (vX.Y.Z in commit message)
+
+---
+
 ## v1.2.4
 
 ### Changed
