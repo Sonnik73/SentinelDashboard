@@ -4,6 +4,14 @@
 
 ---
 
+## v1.2.8
+
+### Added
+- New docs/MODULES.md: documents every module (system, weather, rss, network, birthdays), the view system, and the offline caching mechanism
+- Flagged create_view() in modules/views/service.py as implemented but unused (candidate for code audit stage)
+
+---
+
 ## v1.2.7
 
 ### Added
