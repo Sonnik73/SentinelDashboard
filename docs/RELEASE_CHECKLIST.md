@@ -41,6 +41,10 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [ ] Layout editor — save, span editing, row packing
 - [ ] Offline behavior — disconnect network, confirm weather/rss fall back to cache correctly
 - [ ] Error handling — invalid config, missing data files, unreachable hosts
+- [ ] **Open item (not a code bug):** as of July 2026, `api.open-meteo.com` has been unreachable from the deployment network for 5+ days (connection times out; DNS resolves fine). Investigation showed several other foreign weather APIs (Met.no, wttr.in, WeatherAPI.com, OpenWeatherMap) are also unreachable from this network, while Russian-hosted sites (RIA, rp5.ru) and major CDNs (Google, Cloudflare) work fine — likely a network/provider-level restriction on certain hosting ranges, not an app bug. Two candidate replacements were evaluated but not yet chosen:
+  - **Yandex Weather API** (`api.weather.yandex.ru`) — confirmed reachable, clean JSON, but the permanently-free "on your site" plan caps at 50 requests/day total, which is below the current 3-cities x 10-min-refresh rate and would need throttling logic
+  - **rp5.ru** — confirmed reachable, no request-count limit, but no self-serve API: the official XML export requires emailing support@rp5.ru for manual approval (fixed IP required, $1/location/month or free with mandatory backlink); scraping the site is the only self-serve option and would add a fragile HTML-parsing dependency
+  - Decision deferred by project owner as of this audit; weather currently keeps working from cache (`data/weather_cache.json`, last successful sync visible in the `last_sync` field) with no risk of the hang bug since the timeout fix in v1.3.2
 
 ## Stage E — Release
 
