@@ -4,6 +4,93 @@
 
 ---
 
+## v1.2.4
+
+### Changed
+- Split frontend settings logic and app bootstrap into separate modules
+
+---
+
+## v1.2.3
+
+### Changed
+- Split frontend widget updaters into a dedicated module
+
+---
+
+## v1.2.2
+
+### Added
+- Frontend API helper module (static/js/api.js)
+
+---
+
+## v1.2.1
+
+### Added
+- Module SDK example (examples/example_widget)
+
+### Changed
+- Cleaned cached bytecode from repository
+
+---
+
+## v1.2.0
+
+### Changed
+- Completed modular API architecture (core/module_api.py)
+
+---
+
+## v1.1.3
+
+### Added
+- Automatic module API discovery
+
+---
+
+## v1.1.2
+
+### Added
+- Manifest driven widget rendering
+
+---
+
+## v1.1.1
+
+### Changed
+- Stabilized self-describing module contract
+
+---
+
+## v1.1.0
+
+### Added
+- Core module loader (core/loader.py)
+
+---
+
+## v1.0.9
+
+### Changed
+- Strengthened module manifest validation
+
+---
+
+## v1.0.8
+
+### Added
+- Birthdays widget MVP
+
+---
+
+## v1.0.7
+
+### Added
+- Widget manifest foundation
+
+---
+
 ## v1.0.6
 
 ### Added
