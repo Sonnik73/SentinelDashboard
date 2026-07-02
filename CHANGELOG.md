@@ -4,6 +4,16 @@
 
 ---
 
+## v1.2.6
+
+### Added
+- ENGINEERING.md principle 11: No Build Systems (fixes reference from DEVELOPMENT.md)
+
+### Fixed
+- Unwrapped check.py command now in a proper bash code fence
+
+---
+
 ## v1.2.5
 
 ### Changed
