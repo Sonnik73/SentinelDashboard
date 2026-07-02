@@ -4,6 +4,17 @@
 
 ---
 
+## v1.3.1
+
+### Fixed
+- examples/example_widget/ was missing its widget template — following the example's own install steps would silently render an empty widget (Jinja2 include ignore missing)
+- example_widget README now accurately documents that the frontend requires manual wiring in static/js/widgets.js (not automatic like the backend)
+
+### Added
+- Tracked two new findings in RELEASE_CHECKLIST.md for the Code Audit stage: unused create_view() function, and the manifest refresh field not being read anywhere in the frontend
+
+---
+
 ## v1.3.0
 
 ### Added
