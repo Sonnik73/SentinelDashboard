@@ -67,12 +67,13 @@ Core
 
 For a detailed description see:
 
-- docs/ARCHITECTURE.md
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
 # Project Structure
 
+```
 core/
 modules/
 routes/
@@ -81,6 +82,16 @@ templates/
 static/
 tools/
 docs/
+```
+
+---
+
+# Requirements
+
+- Python 3.11+ (developed and tested on Python 3.13)
+- pip
+- Linux or Raspberry Pi OS (Raspberry Pi 4/5 recommended)
+- No Node.js / npm required — the project runs as a single `uvicorn` process
 
 ---
 
@@ -98,48 +109,70 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 uvicorn app:app --host 0.0.0.0 --port 8000
-Open:
+```
+
+Open in your browser:
+
+```
 http://<RaspberryPi-IP>:8000
+```
+
 Example:
+
+```
 http://192.168.88.107:8000
-Documentation
-INSTALL.md
-DEVELOPMENT.md
-ARCHITECTURE.md
-ROADMAP.md
-Development
+```
+
+---
+
+# Documentation
+
+- [INSTALL.md](docs/INSTALL.md)
+- [DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [ENGINEERING.md](docs/ENGINEERING.md)
+- [ROADMAP.md](docs/ROADMAP.md)
+
+---
+
+# Development
+
 Before every commit:
+
+```bash
 python tools/check.py
+```
+
 Recommended workflow:
-One feature
 
-↓
+One feature → Validation → Commit → Push
 
-Validation
+---
 
-↓
+# Current Status
 
-Commit
+**Current Version:** v1.2.4
 
-↓
+## Completed (Stable v1)
 
-Push
-Current Status
-Current Version
-v1.0.6
-Completed
-Stable v1
-Widget System
-View Engine
-Layout Engine
-Live Preview
-Layout Editor
-Next Target
-v2.0
-Drag & Drop
-View Manager
-Responsive Layout
-Widget Framework
-Plugin Architecture
-License
+- Widget System
+- View Engine
+- Layout Engine
+- Live Preview
+- Layout Editor
+- Modular API architecture
+- Automatic module discovery
+
+## Planned (after v2.0)
+
+- Drag & Drop
+- View Manager
+- Responsive Layout
+- Widget Framework
+- Plugin Architecture
+
+---
+
+# License
+
 MIT License
