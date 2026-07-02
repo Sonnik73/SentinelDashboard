@@ -18,6 +18,10 @@
 - Widget Templates
 - Automatic Row Packing
 - Layout Editor
+- Widget Manifest System
+- Automatic Module Discovery
+- Modular API Architecture
+- Birthdays Widget
 - Project Documentation
 
 ---
@@ -36,7 +40,6 @@
 ## Widgets
 
 - Cameras
-- Birthdays
 - Meshtastic
 - Zabbix
 - Notifications
@@ -54,8 +57,6 @@
 
 - Widget Framework
 - Plugin Architecture
-- Widget Manifest
-- Automatic Module Discovery
 
 ---
 
