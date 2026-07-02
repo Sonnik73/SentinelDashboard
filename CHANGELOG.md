@@ -4,6 +4,16 @@
 
 ---
 
+## v1.3.0
+
+### Added
+- New docs/RELEASE_CHECKLIST.md tracking the 5-stage release audit (Documentation, Repository Cleanup, Code Audit, UX Audit, Release)
+
+### Milestone
+- Stage A (Documentation) of the v2.0 Release Candidate Audit is complete: README, INSTALL, DEVELOPMENT, ENGINEERING, ARCHITECTURE, MODULES, ROADMAP, and RELEASE_CHECKLIST have all been rewritten and verified against the actual codebase
+
+---
+
 ## v1.2.9
 
 ### Fixed
