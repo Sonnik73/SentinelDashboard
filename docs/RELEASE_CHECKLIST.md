@@ -22,7 +22,8 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [x] CHANGELOG.md kept in sync with VERSION
 - [x] VERSION file kept in sync with commits
 - [x] .gitignore covers .venv, __pycache__, runtime data cache, local config
-- [ ] Remove any leftover dead code or unused files found during Stage C
+- [x] Remove leftover dead config: `dashboard` block (title/refresh) and duplicate `widgets` block in config/dashboard.json were unused — removed. `available_widgets` in /api/views is now sourced dynamically from the module loader instead of static config
+- [ ] `network.router_ip` and `network.internet_host` in config/dashboard.json are also unused (only `network.hosts` is read) — candidate for removal, not yet done
 
 ## Stage C — Code Audit
 
@@ -31,6 +32,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [ ] Known candidate: `create_view()` in modules/views/service.py is implemented but not wired to any API endpoint — decide whether to expose it or remove it
 - [ ] Confirm the `system` module's special-cased wiring (no service.py/api.py of its own) is intentional and documented, or refactor to match the standard module convention
 - [ ] The `refresh` field in every module's manifest.json is not read anywhere in the frontend — refresh intervals are hardcoded per-widget in static/js/widgets.js instead. Decide whether to wire manifest refresh values into the frontend or remove the unused field from manifests
+- [x] Fixed: `/api/weather` could hang up to 45s (3 cities × 15s timeout) when the network is unreachable before falling back to cache. Reduced per-city HTTP timeout from 15s to 5s (worst case now ~15s)
 
 ## Stage D — UX Audit
 

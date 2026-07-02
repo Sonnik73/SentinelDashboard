@@ -1,13 +1,4 @@
 {
-    "dashboard": {
-        "title": "Sentinel Dashboard",
-        "refresh": {
-            "system": 1,
-            "weather": 600,
-            "rss": 300,
-            "network": 30
-        }
-    },
     "weather": {
         "provider": "open-meteo",
         "timezone": "Europe/Moscow",
@@ -54,31 +45,5 @@
                 "address": "1.1.1.1"
             }
         ]
-    },
-    "widgets": {
-        "system": {
-            "title": "System",
-            "icon": "🖥"
-        },
-        "weather": {
-            "title": "Weather",
-            "icon": "🌤"
-        },
-        "rss": {
-            "title": "News",
-            "icon": "📰"
-        },
-        "network": {
-            "title": "Network",
-            "icon": "🌐"
-        },
-        "birthdays": {
-            "title": "Birthdays",
-            "icon": "🎂"
-        },
-        "cameras": {
-            "title": "Cameras",
-            "icon": "📷"
-        }
     }
 }

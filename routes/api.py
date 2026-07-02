@@ -4,7 +4,6 @@ from modules.views.service import (
     save_view_layout,
 )
 from core.version import get_version
-from core.config import get_section
 from core.widgets import get_widgets_data
 from fastapi import APIRouter, Request, Body
 
@@ -43,14 +42,13 @@ def api_views(request: Request):
     view_name = request.query_params.get("view")
     current_view = load_view(view_name)
 
-    widget_config = get_section("widgets")
     available_widgets = [
         {
-            "id": widget_id,
-            "title": meta.get("title", widget_id),
-            "icon": meta.get("icon", ""),
+            "id": widget["id"],
+            "title": widget["title"],
+            "icon": widget["icon"],
         }
-        for widget_id, meta in widget_config.items()
+        for widget in get_widgets_data()
     ]
 
     return {
