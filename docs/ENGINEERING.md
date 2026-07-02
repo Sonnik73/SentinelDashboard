@@ -44,7 +44,9 @@ Broken commits are unacceptable.
 
 Before every commit run:
 
+```bash
 python tools/check.py
+```
 
 Whenever possible:
 
@@ -91,6 +93,27 @@ Migration is preferred over breaking changes.
 Choose the simplest solution that remains maintainable.
 
 Avoid unnecessary complexity.
+
+---
+
+# 11. No Build Systems
+
+SentinelDashboard runs as a single process:
+
+```bash
+uvicorn app:app
+```
+
+Nothing else.
+
+Do NOT introduce:
+
+- Node.js / npm
+- Webpack, Vite, Rollup
+- React, Vue, Angular
+- Any JavaScript build or bundling step
+
+The frontend is vanilla JavaScript, served directly by FastAPI. This constraint is intentional and one of the project's core values.
 
 ---
 
