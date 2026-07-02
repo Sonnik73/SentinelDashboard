@@ -1,81 +1,81 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Этот файл даёт инструкции Claude Code (claude.ai/code) при работе с кодом в этом репозитории.
 
-## Project overview
+## Обзор проекта
 
-SentinelDashboard is a modular, offline-first information dashboard for Raspberry Pi / Linux servers. It runs as a single `uvicorn` process — a FastAPI backend serving Jinja2 templates and vanilla JavaScript, with no Node.js, no build step, and no frontend framework. JSON files (`config/dashboard.json`, `config/views/*.json`, module `manifest.json`) are the source of truth for configuration, views, and layouts.
+SentinelDashboard — модульный, работающий в offline-first режиме информационный дашборд для Raspberry Pi / Linux-серверов. Работает как единый процесс `uvicorn` — бэкенд на FastAPI отдаёт Jinja2-шаблоны и обычный (vanilla) JavaScript, без Node.js, без сборки (build step) и без фронтенд-фреймворков. JSON-файлы (`config/dashboard.json`, `config/views/*.json`, `manifest.json` модулей) — источник истины для конфигурации, представлений (views) и раскладок (layout).
 
-## Commands
+## Команды
 
-Run the dev server:
+Запуск dev-сервера:
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-Validate before every commit (Python syntax, config JSON, and — if the server is already running on `127.0.0.1:8000` — live API endpoints):
+Проверка перед каждым коммитом (синтаксис Python, JSON-конфиги, а также — если сервер уже запущен на `127.0.0.1:8000` — живые API-эндпоинты):
 
 ```bash
 python tools/check.py
 ```
 
-If the server isn't running, the API portion of the check is skipped with a `[WARN]`, not a failure. There is no automated test suite (no pytest/unittest) — `tools/check.py` is the only validation gate.
+Если сервер не запущен, проверка API пропускается с пометкой `[WARN]`, это не считается ошибкой. Автоматических тестов (pytest/unittest) в проекте нет — `tools/check.py` единственный инструмент валидации.
 
-**Note:** README/INSTALL reference `pip install -r requirements.txt`, but no `requirements.txt` currently exists in the repo. Runtime dependencies inferred from imports: `fastapi`, `uvicorn`, `jinja2`, `psutil`, `httpx`, `feedparser`.
+**Важно:** в README/INSTALL упоминается `pip install -r requirements.txt`, но самого файла `requirements.txt` в репозитории сейчас нет. Зависимости среды выполнения, определённые по импортам: `fastapi`, `uvicorn`, `jinja2`, `psutil`, `httpx`, `feedparser`.
 
-## Architecture
+## Архитектура
 
 ```
 Browser → FastAPI (app.py) → Routes (routes/) → Modules (modules/) → Core (core/)
 ```
 
-### Module system — automatic discovery, no manual registration
+### Система модулей — автоматическое обнаружение, без ручной регистрации
 
-On startup, `core/loader.py` scans `modules/*/manifest.json`. Each manifest declares `id`, `title`, `icon`, `type`, and optional `refresh`; everything else follows convention over configuration:
+При старте `core/loader.py` сканирует `modules/*/manifest.json`. Каждый манифест объявляет `id`, `title`, `icon`, `type` и опционально `refresh`; всё остальное определяется по соглашению (convention over configuration):
 
-| Piece | Default location if not overridden in manifest |
+| Компонент | Путь по умолчанию, если не указан в манифесте |
 |---|---|
-| Template | `templates/widgets/<id>.html` |
-| Service | `modules/<id>/service.py`, if present |
-| API | `modules/<id>/api.py`, if present |
+| Шаблон | `templates/widgets/<id>.html` |
+| Сервис | `modules/<id>/service.py`, если файл существует |
+| API | `modules/<id>/api.py`, если файл существует |
 
-If a module folder has an `api.py` exposing `router = APIRouter()`, `core/module_api.py` imports it automatically and `app.py` mounts it under `/api`. **To add a new widget module: drop a folder with `manifest.json` (+ optional `service.py`/`api.py`/template) into `modules/` — no code changes elsewhere are needed.** See `examples/example_widget/` for the minimal template and `docs/MODULES.md` for the full convention.
+Если в папке модуля есть `api.py` с `router = APIRouter()`, `core/module_api.py` автоматически импортирует его, а `app.py` подключает под `/api`. **Чтобы добавить новый виджет-модуль: достаточно положить папку с `manifest.json` (+ опционально `service.py`/`api.py`/шаблон) в `modules/` — никаких правок в остальном коде не требуется.** Минимальный шаблон — в `examples/example_widget/`, полное описание соглашения — в `docs/MODULES.md`.
 
-Two exceptions to the standard convention:
-- **`system`** module: manifest-registered for widget display, but its data comes from `core/system.py` via a route wired directly in `routes/api.py` (`/api/system`), not a per-module `service.py`/`api.py`.
-- **`views`** module (`modules/views/`): has no `manifest.json` and is not discovered by the loader at all — it's imported directly by `routes/api.py` and `routes/dashboard.py` to manage `config/views/*.json`.
+Два исключения из стандартного соглашения:
+- **`system`** — модуль зарегистрирован в манифесте для отображения виджета, но данные берутся из `core/system.py` через маршрут, подключённый напрямую в `routes/api.py` (`/api/system`), а не через `service.py`/`api.py` модуля.
+- **`views`** (`modules/views/`) — у него нет `manifest.json`, и loader его вообще не обнаруживает; он импортируется напрямую в `routes/api.py` и `routes/dashboard.py` для управления файлами `config/views/*.json`.
 
-### View / Layout model
+### Модель View / Layout
 
-Each dashboard view is one JSON file in `config/views/`. A view has a `layout`: a list of rows, each row a list of `{"widget": id, "span": 1-12}` items. `modules/views/service.py` loads, normalizes (auto-upgrades legacy formats, defaults missing `span` to 12), and saves views. The frontend Layout Editor (`static/js/settings.js`) edits this model directly with live preview — no separate "widgets" list is authoritative once a layout exists.
+Каждое представление (view) дашборда — это один JSON-файл в `config/views/`. У view есть `layout`: список строк, каждая строка — список элементов `{"widget": id, "span": 1-12}`. `modules/views/service.py` загружает, нормализует (автоматически обновляет устаревшие форматы, проставляет `span` по умолчанию = 12) и сохраняет views. Фронтенд-редактор раскладки (`static/js/settings.js`) работает напрямую с этой моделью с живым предпросмотром — отдельного списка "widgets" как источника истины после появления layout уже нет.
 
-### Offline caching pattern
+### Паттерн offline-кэширования
 
-Any module that fetches external data (currently `weather`, `rss`) follows the same pattern via `core/cache.py`: on success, write `data/<name>_cache.json`; on failure, serve the last cached copy tagged `"source": "cache"` (vs `"source": "online"`) so the frontend can indicate staleness. `data/` is gitignored — cache files are runtime state, not committed.
+Любой модуль, получающий внешние данные (сейчас это `weather` и `rss`), следует одному и тому же паттерну через `core/cache.py`: при успехе — запись в `data/<name>_cache.json`; при ошибке — отдаётся последняя закэшированная копия с пометкой `"source": "cache"` (в отличие от `"source": "online"`), чтобы фронтенд мог показать, что данные устарели. Папка `data/` в `.gitignore` — файлы кэша это runtime-состояние, они не коммитятся.
 
-### Frontend wiring is NOT automatic
+### Подключение на фронтенде НЕ автоматическое
 
-Unlike the backend, adding a widget's live data to the UI requires manually wiring `static/js/widgets.js` (fetch `/api/<id>`, write into `#<id>-content`, register with `setInterval`). The `refresh` value in a module's `manifest.json` is currently unused by the frontend — refresh intervals are hardcoded per-widget in `widgets.js` (tracked in `docs/RELEASE_CHECKLIST.md`). JS files under `static/js/` are grouped by responsibility (`api.js` fetch helpers, `app.js` bootstrap, `ui.js`, `widgets.js` per-widget updaters, `settings.js` layout editor/settings drawer) — keep new code in the file matching its responsibility rather than adding new global scripts.
+В отличие от бэкенда, чтобы вывести живые данные виджета в интерфейс, нужно вручную подключить их в `static/js/widgets.js` (запрос к `/api/<id>`, запись в `#<id>-content`, регистрация через `setInterval`). Поле `refresh` в `manifest.json` модуля сейчас фронтендом не используется — интервалы обновления захардкожены для каждого виджета прямо в `widgets.js` (это отслеживается в `docs/RELEASE_CHECKLIST.md`). JS-файлы в `static/js/` сгруппированы по зоне ответственности (`api.js` — хелперы для запросов, `app.js` — bootstrap приложения, `ui.js`, `widgets.js` — обновление данных по каждому виджету, `settings.js` — редактор раскладки/панель настроек) — новый код стоит добавлять в файл, соответствующий его зоне ответственности, а не создавать новые глобальные скрипты.
 
-## Conventions
+## Соглашения (conventions)
 
-- **Versioning**: every commit bumps `VERSION` and the commit message is `vX.Y.Z Short description` (patch = small fix/step, minor = completed feature/milestone, major = breaking change or release stage). Workflow: update `VERSION` → `python tools/check.py` → `git commit -m "vX.Y.Z ..."` → `git push`.
-- **Python**: simple, explicit, minimal dependencies, small focused modules — matches the existing style in `core/` and `modules/*/service.py`.
-- **JavaScript**: vanilla JS only, no frameworks, no build step, no bundler. Do not introduce Node.js/npm/Webpack/Vite/React/Vue — this is an explicit engineering principle (`docs/ENGINEERING.md` #11), not an oversight.
-- **Small, working commits**: one completed unit of work per commit; large refactors are avoided in favor of small reviewable patches; every commit should leave the tree in a working state.
-- **Docs evolve with code**: `docs/ARCHITECTURE.md`, `docs/MODULES.md`, `docs/ROADMAP.md`, and `CHANGELOG.md` are expected to be updated alongside behavioral changes, not left to drift.
+- **Версионирование**: каждый коммит увеличивает версию в файле `VERSION`, а сообщение коммита имеет формат `vX.Y.Z Короткое описание` (patch — небольшой фикс/шаг, minor — завершённая фича/веха, major — breaking change или этап релиза). Порядок действий: обновить `VERSION` → `python tools/check.py` → `git commit -m "vX.Y.Z ..."` → `git push`.
+- **Python**: просто, явно, минимум зависимостей, небольшие сфокусированные модули — как уже сделано в `core/` и `modules/*/service.py`.
+- **JavaScript**: только vanilla JS, без фреймворков, без сборки, без бандлера. Не вносить Node.js/npm/Webpack/Vite/React/Vue — это осознанный инженерный принцип (`docs/ENGINEERING.md`, пункт 11), а не недосмотр.
+- **Маленькие рабочие коммиты**: один завершённый кусок работы = один коммит; крупные рефакторинги избегаются в пользу небольших патчей, которые легко ревьюить; после каждого коммита проект должен оставаться в рабочем состоянии.
+- **Документация развивается вместе с кодом**: `docs/ARCHITECTURE.md`, `docs/MODULES.md`, `docs/ROADMAP.md` и `CHANGELOG.md` должны обновляться вместе с изменениями поведения, а не расходиться с кодом со временем.
 
-## Known in-progress gaps (see `docs/RELEASE_CHECKLIST.md`)
+## Известные незавершённые моменты (см. `docs/RELEASE_CHECKLIST.md`)
 
-- `create_view()` in `modules/views/service.py` is implemented but not wired to any API endpoint.
-- `network.router_ip` / `network.internet_host` in `config/dashboard.json` are unused (only `network.hosts` is read).
-- `cameras` widget is a template placeholder only — no `service.py`/`api.py` behind it.
-- Weather: `api.open-meteo.com` has been unreachable from the deployment network; decision on a replacement provider (Yandex Weather API vs. rp5.ru) is deferred — don't "fix" this by swapping providers without checking current project owner direction.
+- `create_view()` в `modules/views/service.py` реализована, но не подключена ни к одному API-эндпоинту.
+- `network.router_ip` / `network.internet_host` в `config/dashboard.json` не используются (читается только `network.hosts`).
+- Виджет `cameras` — это только заглушка-шаблон, без `service.py`/`api.py`.
+- Погода: `api.open-meteo.com` недоступен из сети, где развёрнут проект; решение о замене провайдера (Yandex Weather API либо rp5.ru) пока отложено — не стоит "чинить" это самостоятельной заменой провайдера без согласования с владельцем проекта.
 
-## Key docs
+## Основная документация
 
-- `docs/ARCHITECTURE.md` — module system, view/layout engine details
-- `docs/MODULES.md` — per-module reference (system, weather, rss, network, birthdays, views)
-- `docs/DEVELOPMENT.md` / `docs/ENGINEERING.md` — workflow and engineering principles
-- `docs/ROADMAP.md` — planned v2.0 work (drag & drop, plugin architecture, etc.)
+- `docs/ARCHITECTURE.md` — система модулей, детали view/layout engine
+- `docs/MODULES.md` — справочник по каждому модулю (system, weather, rss, network, birthdays, views)
+- `docs/DEVELOPMENT.md` / `docs/ENGINEERING.md` — рабочий процесс и инженерные принципы
+- `docs/ROADMAP.md` — планы на v2.0 (drag & drop, плагинная архитектура и т.д.)
