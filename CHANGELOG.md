@@ -4,6 +4,19 @@
 
 ---
 
+## v1.5.0
+
+### Changed
+- Weather provider switched from Open-Meteo (unreachable from the deployment network since June 2026, see v1.3.3) to the Yandex Weather API. Project owner's decision, choosing it over rp5.ru because rp5 would've meant either a fragile HTML scrape with no way to verify it in this development environment, or manual approval for its paid XML export
+- `modules/weather/service.py` rewritten against Yandex's `v2/informers` endpoint (`fact.temp`, `fact.humidity`, `fact.wind_speed`), reading the API key from a new `YANDEX_WEATHER_API_KEY` environment variable (documented in INSTALL.md, including the systemd unit example)
+- Added a server-side throttle (`MIN_REFRESH_SECONDS`, 2h): `get_weather()` now serves the existing cache instead of making a live request if it was refreshed recently, regardless of how many clients call `/api/weather` or how often — protects the free tier's 50 requests/day cap (3 cities x 12 refreshes/day = 36/day) in a way that a frontend-only polling interval couldn't, since the dashboard can be viewed from multiple devices at once
+- `modules/weather/manifest.json`'s `refresh` raised from 600s to 7200s to match; `config/dashboard.json`'s now-unused `weather.timezone` removed and `weather.provider` updated to `"yandex"`
+
+### Known limitation
+- **Not verified against the live Yandex endpoint.** This development environment's own network policy blocks `api.weather.yandex.ru`, the same way it blocked `api.open-meteo.com` — verification was limited to a mocked HTTP client (confirms the header, request shape, response parsing, throttle, and error-fallback logic all work), plus `tools/check.py`. Needs a real first run with `YANDEX_WEATHER_API_KEY` set on the actual deployment to confirm the endpoint/header/response shape are still correct
+
+---
+
 ## v1.4.3
 
 ### Fixed
