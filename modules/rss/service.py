@@ -11,6 +11,9 @@ RSS_CONFIG = get_section("rss")
 def fetch_feed(feed):
     parsed = feedparser.parse(feed["url"])
 
+    if parsed.bozo and not parsed.entries:
+        raise RuntimeError(f"Failed to fetch feed {feed['url']}: {parsed.bozo_exception}")
+
     items = []
 
     for entry in parsed.entries[:5]:
@@ -41,11 +44,12 @@ def get_rss():
         save_cache("rss", data)
         return data
 
-    except Exception:
+    except Exception as error:
         cached_data = load_cache("rss")
 
         if cached_data:
             cached_data["source"] = "cache"
+            cached_data["error"] = str(error)
             return cached_data
 
         return {

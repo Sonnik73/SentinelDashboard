@@ -77,10 +77,6 @@ def load_view(name: str | None = None):
     return normalize_view(view)
 
 
-def get_view_widgets(name: str | None = None):
-    view = load_view(name)
-    return view.get("widgets", [])
-
 def save_view_layout(name: str, layout: list):
     view_name = name or DEFAULT_VIEW
     view_file = VIEWS_DIR / f"{view_name}.json"

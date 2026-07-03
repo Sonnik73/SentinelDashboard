@@ -16,7 +16,7 @@ def fetch_city_weather(city):
         "latitude": city["latitude"],
         "longitude": city["longitude"],
         "current": "temperature_2m,relative_humidity_2m,wind_speed_10m",
-	"timezone": TIMEZONE,
+        "timezone": TIMEZONE,
     }
 
     response = httpx.get(url, params=params, timeout=5)
