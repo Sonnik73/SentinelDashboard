@@ -4,6 +4,18 @@
 
 ---
 
+## v2.1.0
+
+### Added
+- Duplicate/Rename/Delete View — the first three items of ROADMAP.md's Workspace section, extending the Create View pattern from v1.4.0
+- `POST /api/views/duplicate` copies an existing view's layout into a new file (`duplicate_view()` in modules/views/service.py)
+- `POST /api/views/rename` changes only a view's `title`, not its file/id — existing `?view=<id>` links keep working (`rename_view()`)
+- `POST /api/views/delete` deletes a view file, refusing to delete `default` since `load_view()` falls back to it when a requested view doesn't exist (`delete_view()`)
+- Settings drawer: "📋 Дублировать" / "✏️ Переименовать" / "🗑 Удалить" buttons under Current View, using native `prompt()`/`confirm()` dialogs to keep the UI simple. The delete button is disabled (both client-side via a new `is_default` flag on `GET /api/views`, and server-side) when viewing the default view
+- Verified end-to-end in a browser: duplicate → redirect to the copy, rename → title updates, delete → redirects to `/`; delete correctly blocked (disabled button + 400 if forced) on the default view; duplicate/rename/delete against nonexistent views correctly return 404, duplicate onto an existing name returns 409
+
+---
+
 ## v2.0.1
 
 ### Changed
