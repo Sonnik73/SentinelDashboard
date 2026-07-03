@@ -4,6 +4,16 @@
 
 ---
 
+## v1.3.6
+
+### Fixed
+- Live Preview didn't work for widgets outside the current view's server-rendered layout: checking a widget in Settings that wasn't already part of the view (e.g. "Система" on the "Wall" view, which only has weather+rss) did nothing visually until Save + full page reload, contradicting docs/ARCHITECTURE.md's claim that layout changes are reflected immediately. templates/dashboard.html now server-renders a hidden `#widget-pool` containing every widget module not in the current view's layout, reusing the already-shipped (but previously unused) `.hidden-widget` CSS class; static/js/settings.js's applyView() already knew how to pick up and reposition any `.layout-cell` found anywhere in the document, so no JS changes were needed
+
+### Changed
+- docs/RELEASE_CHECKLIST.md: marked the Stage C "JavaScript — review static/js/*.js for consistency" item done — full audit found and fixed 3 issues (missing DOM guards in widget updaters, hardcoded stale version in the footer, incomplete Live Preview for out-of-view widgets)
+
+---
+
 ## v1.3.5
 
 ### Fixed
