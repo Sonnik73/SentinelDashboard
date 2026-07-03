@@ -22,7 +22,17 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 4. Run the dashboard
+## 4. Configure the weather API key
+
+The weather widget uses the [Yandex Weather API](https://yandex.ru/dev/weather/), which requires a free API key. Get one from the Yandex Developer Console (the free "on your site" plan is capped at 50 requests/day, which is enough for this dashboard's built-in throttling — see [MODULES.md](MODULES.md)), then set it as an environment variable before starting the app:
+
+```bash
+export YANDEX_WEATHER_API_KEY=your-key-here
+```
+
+If the key isn't set, the weather widget falls back to cached/error state instead of crashing — the rest of the dashboard is unaffected.
+
+## 5. Run the dashboard
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
@@ -51,6 +61,7 @@ After=network.target
 Type=simple
 User=<your-username>
 WorkingDirectory=/home/<your-username>/sentinel
+Environment=YANDEX_WEATHER_API_KEY=your-key-here
 ExecStart=/home/<your-username>/sentinel/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=5

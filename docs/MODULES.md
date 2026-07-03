@@ -17,10 +17,12 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 
 ### weather
 
-- Data source: the [Open-Meteo](https://open-meteo.com) API (no API key required)
-- Configured in `config/dashboard.json` under `weather` (`cities`, `timezone`)
+- Data source: the [Yandex Weather API](https://yandex.ru/dev/weather/) `v2/informers` endpoint (switched from Open-Meteo in v1.5.0 — see below). Requires an API key in the `YANDEX_WEATHER_API_KEY` environment variable; see [INSTALL.md](INSTALL.md) for how to set it
+- Configured in `config/dashboard.json` under `weather` (`cities`)
 - Endpoint: `GET /api/weather`
-- Offline behavior: on request failure, falls back to the last successful response cached in `data/weather_cache.json`. Responses are tagged `"source": "online"` or `"source": "cache"` so the frontend can indicate staleness
+- Rate limiting: Yandex's free "on your site" plan caps at 50 requests/day total. With 3 configured cities, `modules/weather/service.py` throttles itself server-side — it won't make a live request more often than once per `MIN_REFRESH_SECONDS` (7200s/2h by default), regardless of how often `/api/weather` is called or from how many devices, and serves the existing cache in between. The `refresh` field in `manifest.json` (also 7200) controls how often the frontend polls, but the server-side throttle is what actually protects the quota
+- Offline behavior: on request failure (including a missing/invalid API key), falls back to the last successful response cached in `data/weather_cache.json`. Responses are tagged `"source": "online"` or `"source": "cache"` so the frontend can indicate staleness
+- Switched from Open-Meteo (unreachable from the deployment network — see CHANGELOG v1.3.3 for the investigation) to Yandex Weather API in v1.5.0. **Not verified against the live Yandex endpoint** — implemented against Yandex's documented `v2/informers` response shape (`fact.temp`, `fact.humidity`, `fact.wind_speed`) and tested with a mocked HTTP client, but the development environment's own network policy blocks `api.weather.yandex.ru` too, so this needs a real first run (with `YANDEX_WEATHER_API_KEY` set) on the actual deployment to confirm the header name (`X-Yandex-Weather-Key`) and response shape are still correct
 
 ### rss
 

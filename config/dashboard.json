@@ -1,7 +1,6 @@
 {
     "weather": {
-        "provider": "open-meteo",
-        "timezone": "Europe/Moscow",
+        "provider": "yandex",
         "cities": [
             {
                 "name": "Москва",
