@@ -23,7 +23,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [x] VERSION file kept in sync with commits
 - [x] .gitignore covers .venv, __pycache__, runtime data cache, local config
 - [x] Remove leftover dead config: `dashboard` block (title/refresh) and duplicate `widgets` block in config/dashboard.json were unused — removed. `available_widgets` in /api/views is now sourced dynamically from the module loader instead of static config
-- [ ] `network.router_ip` and `network.internet_host` in config/dashboard.json are also unused (only `network.hosts` is read) — candidate for removal, not yet done
+- [x] `network.router_ip` and `network.internet_host` in config/dashboard.json were unused (only `network.hosts` is read) — removed
 
 ## Stage C — Code Audit
 
