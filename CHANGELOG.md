@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.8
+
+### Removed
+- `network.router_ip` and `network.internet_host` in config/dashboard.json — dead config, never read by modules/network/service.py (only `network.hosts` is used). Closes the last open item in Stage B of RELEASE_CHECKLIST.md
+
+---
+
 ## v1.3.7
 
 ### Changed
