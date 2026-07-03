@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.7
+
+### Changed
+- static/js/widgets.js: refresh intervals are now read from the `refresh` field in each module's manifest.json (via /api/widgets) instead of being hardcoded in a separate setInterval call per widget. Manifest values already matched the hardcoded ones exactly (system=1s, network=30s, rss=300s, weather=600s, birthdays=3600s), so this is a wiring change with no behavior change. Verified in a browser: system widget's CPU value still refreshes every ~1s
+
+---
+
 ## v1.3.6
 
 ### Fixed
