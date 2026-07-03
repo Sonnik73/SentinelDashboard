@@ -143,6 +143,7 @@ body {
     right: -360px;
     width: 320px;
     height: 100vh;
+    overflow-y: auto;
     background: #171717;
     border-left: 1px solid #444;
     padding: 20px;

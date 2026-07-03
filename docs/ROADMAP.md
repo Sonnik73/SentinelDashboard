@@ -57,6 +57,7 @@
 
 - Widget Framework
 - Plugin Architecture
+- Module load-failure visibility: `core/loader.py`/`core/module_api.py` don't currently expose *why* a module's API failed to load (e.g. invalid config/dashboard.json). `/api/widgets` still reports a broken module as `"enabled": true`, so Settings offers it as a normal widget that silently never loads data. Needs an `available`/error flag on `ModuleInfo`, surfaced through `/api/widgets` and shown in the frontend
 
 ---
 
