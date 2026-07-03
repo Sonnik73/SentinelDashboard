@@ -25,14 +25,14 @@ USER_AGENT = (
 # values in the raw HTML). Each pattern is anchored on a CSS class or help
 # text that looked stable, then matched against the nearest following
 # value in the forecast table's first (nearest-time) column.
-TEMPERATURE_PATTERN = re.compile(r'class="t_0"><b>([+-]?)<span class="otstup"[^>]*></span>(\d+)</b>')
-HUMIDITY_PATTERN = re.compile(r'<td class="[^"]*">(\d+)</td>')
+TEMPERATURE_PATTERN = re.compile(r'class="t_0"[^>]*><b>([+-]?)<span class="otstup"[^>]*></span>(\d+)</b>')
+HUMIDITY_PATTERN = re.compile(r'<td class="[^"]*"[^>]*>(\d+)</td>')
 WIND_SPEED_PATTERN = re.compile(r'class="wv_0[^"]*"[^>]*>(\d+)</div>')
 
 HUMIDITY_MARKER = 'title="Относительная влажность на высоте 1.5 м (%)">Влажность</a>'
 
 
-def extract_after(html, marker, pattern, window=2000):
+def extract_after(html, marker, pattern, window=3000):
     start = html.find(marker)
 
     if start == -1:
