@@ -165,14 +165,29 @@ async function updateNetwork() {
 // Update Scheduler
 // ------------------------------
 
-updateSystemMetrics();
-updateWeather();
-updateRSS();
-updateNetwork();
-updateBirthdays();
+const WIDGET_UPDATERS = {
+    system: updateSystemMetrics,
+    weather: updateWeather,
+    rss: updateRSS,
+    network: updateNetwork,
+    birthdays: updateBirthdays,
+};
 
-setInterval(updateSystemMetrics, 1000);
-setInterval(updateWeather, 600000);
-setInterval(updateRSS, 300000);
-setInterval(updateNetwork, 30000);
-setInterval(updateBirthdays, 3600000);
+Object.values(WIDGET_UPDATERS).forEach(updater => updater());
+
+async function scheduleWidgetUpdates() {
+    try {
+        const widgets = await apiGet("/api/widgets");
+
+        widgets.forEach(widget => {
+            const updater = WIDGET_UPDATERS[widget.id];
+            if (!updater || !widget.refresh) return;
+
+            setInterval(updater, widget.refresh * 1000);
+        });
+    } catch (error) {
+        console.error("Widget schedule:", error);
+    }
+}
+
+scheduleWidgetUpdates();
