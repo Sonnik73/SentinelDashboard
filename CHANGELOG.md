@@ -4,6 +4,21 @@
 
 ---
 
+## v2.0.0
+
+Public v2.0 release. All five stages of the RELEASE_CHECKLIST.md audit are complete — see it for the full breakdown of what was found and fixed at each stage (documentation, repository cleanup, code audit, UX audit, release). Highlights since v1.2.4 (the last version README used to reference):
+
+- Full documentation pass across README/INSTALL/DEVELOPMENT/ENGINEERING/ARCHITECTURE/MODULES/ROADMAP
+- Removed dead config (`config/dashboard.json`'s unused `dashboard`/`widgets` blocks, `network.router_ip`/`internet_host`); `/api/widgets` now sources from the module loader dynamically instead of static config
+- JS code audit: fixed widget updaters crashing on views that don't include them, a stale hardcoded version in the dashboard footer, and Live Preview not working for widgets outside the current view's layout
+- Python code audit: fixed a real offline-cache bug in the RSS module (feedparser silently swallowing network failures instead of raising, so outages overwrote the last good cache with nothing)
+- `create_view()` wired up to `POST /api/views/create` with a Settings drawer UI — views can now be created without editing JSON by hand
+- The `refresh` field in widget manifests is now actually read by the frontend instead of being a hardcoded duplicate in `widgets.js`
+- Fixed a real UX bug found on real hardware: the Settings drawer's Save/Reset/Share buttons were unreachable off-screen on standard viewport heights
+- Weather provider rewritten twice this cycle: Open-Meteo (unreachable from the deployment network) → Yandex Weather API (dropped its free tier before the integration shipped) → scraping rp5.ru directly. The final version was developed against real saved pages and debugged through two rounds of real-hardware testing, confirmed working end-to-end for all three configured cities
+
+---
+
 ## v1.6.3
 
 ### Confirmed
