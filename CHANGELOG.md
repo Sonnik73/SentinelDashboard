@@ -4,6 +4,22 @@
 
 ---
 
+## v1.6.0
+
+### Changed
+- Weather provider switched again, this time from Yandex Weather API to scraping rp5.ru. Yandex quietly ended its permanent free "on your site" tier (now just a 14-day trial) before the v1.5.0 integration ever ran in production, which invalidated that decision. rp5.ru has no API, no key, and no quota, at the cost of depending on undocumented page structure instead of a documented contract
+- `modules/weather/service.py` rewritten to scrape rp5.ru's desktop city pages (`https://rp5.ru/Погода_в_<Город>`) instead of calling an API. The **mobile** site (`m.rp5.ru`) was tried first and ruled out — it loads its weather table via JavaScript and doesn't expose humidity in the raw HTML at all, only the desktop version renders temperature/humidity/wind server-side. Extraction is regex-based (`class="t_temperature"`, the "Влажность" table row, `class="t_wind_velocity"`), reading all three values from the same forecast-table column so they're internally consistent
+- Developed and verified against **real saved rp5.ru pages** (both mobile and desktop, supplied by the project owner) rather than guessed selectors — confirmed working end-to-end for Ulyanovsk, including the throttle and the fallback-to-cache path when parsing fails (simulated a site redesign, confirmed a clean error instead of a crash)
+- `config/dashboard.json`'s `weather.cities` entries now hold a `url` (the exact rp5.ru page) instead of `latitude`/`longitude`, since there's no reliable way to generate a Russian-declined URL from a plain city name in code. Moscow and Krasnodar's URLs are constructed by standard declension but **not verified against a real page** — only Ulyanovsk was confirmed
+- Throttle (`MIN_REFRESH_SECONDS`) relaxed from Yandex's quota-driven 2h down to 1800s (30min) — rp5.ru has no hard request cap, this is just politeness toward a plain web page instead of a rate-limited API. `modules/weather/manifest.json`'s `refresh` matches
+- Removed everything Yandex-specific: `YANDEX_WEATHER_API_KEY` env var and its INSTALL.md/systemd documentation are gone, since scraping needs no credentials
+
+### Known limitations
+- Confirmed working against real captured HTML for **Ulyanovsk only**; Moscow and Krasnodar need a real run to confirm their URLs and page structure match
+- Scraping is inherently fragile: if rp5.ru redesigns its page, the parser will start raising and the widget will fall back to cache indefinitely until someone updates the selectors in `modules/weather/service.py`
+
+---
+
 ## v1.5.0
 
 ### Changed
