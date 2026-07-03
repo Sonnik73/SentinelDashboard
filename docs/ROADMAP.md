@@ -24,6 +24,9 @@
 - Birthdays Widget
 - Project Documentation
 - Create View
+- Duplicate View
+- Rename View (title only — the underlying view id/URL stays stable)
+- Delete View
 
 ---
 
@@ -32,9 +35,6 @@
 ## Workspace
 
 - Drag & Drop Layout Editor
-- Duplicate View
-- Rename View
-- Delete View
 - Import / Export Views
 
 ## Widgets

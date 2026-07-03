@@ -58,6 +58,9 @@ Provided functions:
 - `load_view(name)` — load and normalize a view's layout (auto-upgrades legacy formats, defaults missing widget spans to 12)
 - `save_view_layout(name, layout)` — persist an edited layout
 - `create_view(name, title)` — scaffold a new view file, exposed via `POST /api/views/create` and the "Новый View" form in the Settings drawer
+- `duplicate_view(source_name, new_name, new_title)` — copy an existing view's layout into a new file, exposed via `POST /api/views/duplicate` and the "📋 Дублировать" button
+- `rename_view(name, new_title)` — changes only the `title` field, not the file/id, so existing `?view=<id>` links keep working. Exposed via `POST /api/views/rename` and the "✏️ Переименовать" button
+- `delete_view(name)` — deletes a view file; refuses to delete the view named `default` (`DEFAULT_VIEW`) since `load_view()` falls back to it when a requested view doesn't exist. Exposed via `POST /api/views/delete` and the "🗑 Удалить" button, which the frontend also disables client-side when the current view is `default` (`is_default` flag from `GET /api/views`)
 
 ---
 

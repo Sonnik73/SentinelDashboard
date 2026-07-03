@@ -208,6 +208,20 @@ body {
     cursor: not-allowed;
 }
 
+.settings-view-manage-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.settings-view-manage-row .settings-action-button {
+    width: auto;
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 12px;
+    text-align: center;
+}
+
 .hidden-widget {
     display: none !important;
 }

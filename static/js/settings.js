@@ -10,12 +10,21 @@ async function loadSettingsDrawer() {
         const data = await apiGet(url);
 
         viewEditor.currentView = data.current.id;
+        viewEditor.currentIsDefault = Boolean(data.current.is_default);
         viewEditor.originalLayout = JSON.parse(JSON.stringify(data.layout || []));
         viewEditor.currentLayout = JSON.parse(JSON.stringify(data.layout || []));
         updateEditorState();
 
         document.getElementById("settings-current-view").textContent =
             `${data.current.title} (${data.current.id})`;
+
+        const deleteButton = document.getElementById("delete-view");
+        if (deleteButton) {
+            deleteButton.disabled = viewEditor.currentIsDefault;
+            deleteButton.title = viewEditor.currentIsDefault
+                ? "Нельзя удалить view по умолчанию"
+                : "";
+        }
 
         const viewSelect = document.getElementById("settings-view-select");
 
@@ -158,6 +167,91 @@ function initCreateViewAction() {
 }
 
 
+async function postJson(url, body) {
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
+
+
+function initViewManagementActions() {
+    const duplicateButton = document.getElementById("duplicate-view");
+    const renameButton = document.getElementById("rename-view");
+    const deleteButton = document.getElementById("delete-view");
+
+    if (!duplicateButton && !renameButton && !deleteButton) return;
+
+    if (duplicateButton) {
+        duplicateButton.addEventListener("click", async () => {
+            const name = window.prompt("Название нового view (латиница, цифры, дефис):");
+            if (!name) return;
+
+            try {
+                const data = await postJson("/api/views/duplicate", {
+                    source: viewEditor.currentView,
+                    name,
+                });
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("view", data.view);
+                window.location.href = url.toString();
+            } catch (error) {
+                console.error("Duplicate view:", error);
+                window.alert(`Не удалось дублировать view: ${error.message}`);
+            }
+        });
+    }
+
+    if (renameButton) {
+        renameButton.addEventListener("click", async () => {
+            const title = window.prompt("Новое название view:");
+            if (!title) return;
+
+            try {
+                await postJson("/api/views/rename", {
+                    view: viewEditor.currentView,
+                    title,
+                });
+
+                window.location.reload();
+            } catch (error) {
+                console.error("Rename view:", error);
+                window.alert(`Не удалось переименовать view: ${error.message}`);
+            }
+        });
+    }
+
+    if (deleteButton) {
+        deleteButton.addEventListener("click", async () => {
+            if (viewEditor.currentIsDefault) return;
+
+            const confirmed = window.confirm(
+                `Удалить view "${viewEditor.currentView}"? Это действие необратимо.`
+            );
+            if (!confirmed) return;
+
+            try {
+                await postJson("/api/views/delete", { view: viewEditor.currentView });
+
+                const url = new URL(window.location.href);
+                url.searchParams.delete("view");
+                window.location.href = url.toString();
+            } catch (error) {
+                console.error("Delete view:", error);
+                window.alert(`Не удалось удалить view: ${error.message}`);
+            }
+        });
+    }
+}
 
 
 // ------------------------------
@@ -168,6 +262,7 @@ const viewEditor = {
     originalLayout: [],
     currentLayout: [],
     currentView: "",
+    currentIsDefault: false,
 };
 
 function getCurrentWidgets() {

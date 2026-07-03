@@ -3,6 +3,10 @@ from modules.views.service import (
     load_view,
     save_view_layout,
     create_view,
+    duplicate_view,
+    rename_view,
+    delete_view,
+    DEFAULT_VIEW,
 )
 from core.version import get_version
 from core.widgets import get_widgets_data
@@ -56,6 +60,7 @@ def api_views(request: Request):
         "current": {
             "id": current_view.get("id"),
             "title": current_view.get("title", current_view.get("id")),
+            "is_default": current_view.get("id") == DEFAULT_VIEW,
         },
         "available_views": list_views(),
         "available_widgets": available_widgets,
@@ -95,5 +100,58 @@ def api_create_view(payload: dict = Body(...)):
         "view": view["id"],
         "title": view.get("title"),
     }
+
+
+@router.post("/views/duplicate")
+def api_duplicate_view(payload: dict = Body(...)):
+    try:
+        view = duplicate_view(
+            payload.get("source", ""),
+            payload.get("name", ""),
+            payload.get("title"),
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except FileExistsError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    return {
+        "status": "ok",
+        "view": view["id"],
+        "title": view.get("title"),
+    }
+
+
+@router.post("/views/rename")
+def api_rename_view(payload: dict = Body(...)):
+    try:
+        view = rename_view(
+            payload.get("view", ""),
+            payload.get("title", ""),
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+    return {
+        "status": "ok",
+        "view": view["id"],
+        "title": view.get("title"),
+    }
+
+
+@router.post("/views/delete")
+def api_delete_view(payload: dict = Body(...)):
+    try:
+        delete_view(payload.get("view", ""))
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+    return {"status": "ok"}
 
 
