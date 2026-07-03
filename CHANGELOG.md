@@ -4,6 +4,19 @@
 
 ---
 
+## v1.4.3
+
+### Fixed
+- README.md's Documentation list was missing links to docs/MODULES.md and docs/RELEASE_CHECKLIST.md, even though both exist and are actively referenced elsewhere
+- README.md showed a stale "Current Version: v1.2.4" (same class of doc-drift bug as the hardcoded v0.8.2 dashboard footer fixed in v1.3.5) — now points to VERSION/CHANGELOG.md instead of a hardcoded number that will go stale again
+
+### Verified (Stage E, no code change needed)
+- examples/example_widget/ tested end-to-end exactly per its own README: copied to modules/example/ + templates/widgets/example.html, auto-discovered with zero code changes, rendered correctly in a browser matching documented behavior. Cleaned up afterward
+- All documentation cross-references and anchors verified resolving correctly
+- `git status` clean
+
+---
+
 ## v1.4.2
 
 ### Fixed
