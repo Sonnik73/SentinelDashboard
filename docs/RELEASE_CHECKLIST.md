@@ -30,7 +30,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [ ] Python — review all modules for consistency with ENGINEERING.md principles
 - [x] JavaScript — reviewed static/js/*.js for consistency. Found and fixed 3 issues: widget updaters in widgets.js didn't guard against missing DOM elements (v1.3.4); dashboard.html footer showed a hardcoded stale version (v1.3.5); Live Preview silently did nothing for widgets outside the current view's server-rendered layout, now fixed with a hidden widget-pool render (v1.3.6)
 - [ ] Known candidate: `create_view()` in modules/views/service.py is implemented but not wired to any API endpoint — decide whether to expose it or remove it
-- [ ] Confirm the `system` module's special-cased wiring (no service.py/api.py of its own) is intentional and documented, or refactor to match the standard module convention
+- [x] Confirmed: the `system` module's special-cased wiring (no service.py/api.py, data via core/system.py + a route hardcoded in routes/api.py) is intentional — decided against refactoring it into the standard convention. Documented in ARCHITECTURE.md, MODULES.md, and CLAUDE.md as the one deliberate exception
 - [x] The `refresh` field in every module's manifest.json is now read by the frontend: static/js/widgets.js fetches /api/widgets and schedules each updater with setInterval(updater, widget.refresh * 1000) instead of hardcoding the interval (v1.3.7)
 - [x] Fixed: `/api/weather` could hang up to 45s (3 cities × 15s timeout) when the network is unreachable before falling back to cache. Reduced per-city HTTP timeout from 15s to 5s (worst case now ~15s)
 
