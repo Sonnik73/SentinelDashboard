@@ -4,6 +4,15 @@
 
 ---
 
+## v1.4.0
+
+### Added
+- `POST /api/views/create` wires up the previously-unused `create_view()` in modules/views/service.py. Validation errors (empty/invalid name) return 400, duplicate view name returns 409
+- Settings drawer: a "Новый View" form (name input + create button) lets you create a view from the UI, then switches to it. Moves "Create View" from ROADMAP.md's Version 2.0 wishlist to Completed
+- Verified end-to-end in a browser: create succeeds and redirects to the new view, duplicate name shows an inline error, invalid characters and empty name are rejected with 400
+
+---
+
 ## v1.3.9
 
 ### Confirmed
