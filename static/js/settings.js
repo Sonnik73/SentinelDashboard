@@ -111,6 +111,53 @@ function initSettingsDrawer() {
 }
 
 
+function initCreateViewAction() {
+    const button = document.getElementById("create-view");
+    const input = document.getElementById("new-view-name");
+    const state = document.getElementById("create-view-state");
+
+    if (!button || !input || !state) return;
+
+    button.addEventListener("click", async () => {
+        const name = input.value.trim();
+
+        if (!name) {
+            state.textContent = "⚠️ Введите название";
+            return;
+        }
+
+        button.disabled = true;
+        state.textContent = "⏳ Создание...";
+
+        try {
+            const response = await fetch("/api/views/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.detail || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("view", data.view);
+            window.location.href = url.toString();
+
+        } catch (error) {
+            console.error("Create view:", error);
+            state.textContent = `⚠️ ${error.message}`;
+            button.disabled = false;
+        }
+    });
+}
+
+
 
 
 // ------------------------------

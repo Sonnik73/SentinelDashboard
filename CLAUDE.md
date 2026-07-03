@@ -68,7 +68,6 @@ Browser → FastAPI (app.py) → Routes (routes/) → Modules (modules/) → Cor
 
 ## Известные незавершённые моменты (см. `docs/RELEASE_CHECKLIST.md`)
 
-- `create_view()` в `modules/views/service.py` реализована, но не подключена ни к одному API-эндпоинту.
 - Виджет `cameras` — это только заглушка-шаблон, без `service.py`/`api.py`.
 - Погода: `api.open-meteo.com` недоступен из сети, где развёрнут проект; решение о замене провайдера (Yandex Weather API либо rp5.ru) пока отложено — не стоит "чинить" это самостоятельной заменой провайдера без согласования с владельцем проекта.
 

@@ -2,10 +2,11 @@ from modules.views.service import (
     list_views,
     load_view,
     save_view_layout,
+    create_view,
 )
 from core.version import get_version
 from core.widgets import get_widgets_data
-from fastapi import APIRouter, Request, Body
+from fastapi import APIRouter, Request, Body, HTTPException
 
 from core.system import get_system_metrics
 
@@ -74,6 +75,25 @@ def api_save_view(payload: dict = Body(...)):
         "status": "ok",
         "view": view["id"],
         "layout": view["layout"],
+    }
+
+
+@router.post("/views/create")
+def api_create_view(payload: dict = Body(...)):
+    try:
+        view = create_view(
+            payload.get("name", ""),
+            payload.get("title"),
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except FileExistsError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    return {
+        "status": "ok",
+        "view": view["id"],
+        "title": view.get("title"),
     }
 
 

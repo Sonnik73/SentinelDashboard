@@ -23,6 +23,7 @@
 - Modular API Architecture
 - Birthdays Widget
 - Project Documentation
+- Create View
 
 ---
 
@@ -31,7 +32,6 @@
 ## Workspace
 
 - Drag & Drop Layout Editor
-- Create View
 - Duplicate View
 - Rename View
 - Delete View

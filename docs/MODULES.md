@@ -54,7 +54,7 @@ Provided functions:
 - `list_views()` — enumerate available views
 - `load_view(name)` — load and normalize a view's layout (auto-upgrades legacy formats, defaults missing widget spans to 12)
 - `save_view_layout(name, layout)` — persist an edited layout
-- `create_view(name, title)` — scaffold a new view file *(implemented, but not yet wired to an API endpoint — a candidate for the code audit stage)*
+- `create_view(name, title)` — scaffold a new view file, exposed via `POST /api/views/create` and the "Новый View" form in the Settings drawer
 
 ---
 
