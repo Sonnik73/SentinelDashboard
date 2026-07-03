@@ -211,3 +211,40 @@ def delete_view(name: str):
 
     view_file.unlink()
 
+
+def export_view(name: str):
+    view_file = VIEWS_DIR / f"{name}.json"
+
+    if not view_file.exists():
+        raise FileNotFoundError(f"View not found: {name}")
+
+    with open(view_file, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def import_view(name: str, view_data: dict, title: str | None = None):
+    view_name = validate_view_name(name)
+    view_file = VIEWS_DIR / f"{view_name}.json"
+
+    if view_file.exists():
+        raise FileExistsError(f"View already exists: {view_name}")
+
+    if not isinstance(view_data, dict):
+        raise ValueError("Invalid view file: expected a JSON object")
+
+    layout = view_data.get("layout")
+
+    if not isinstance(layout, list) or not all(isinstance(row, list) for row in layout):
+        raise ValueError("Invalid view file: 'layout' must be a list of rows")
+
+    view = {
+        "title": title or view_data.get("title") or view_name.title(),
+        "layout": layout,
+    }
+
+    with open(view_file, "w", encoding="utf-8") as file:
+        json.dump(view, file, ensure_ascii=False, indent=4)
+
+    view["id"] = view_name
+    return normalize_view(view)
+

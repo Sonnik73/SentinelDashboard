@@ -6,11 +6,14 @@ from modules.views.service import (
     duplicate_view,
     rename_view,
     delete_view,
+    export_view,
+    import_view,
     DEFAULT_VIEW,
 )
 from core.version import get_version
 from core.widgets import get_widgets_data
 from fastapi import APIRouter, Request, Body, HTTPException
+from fastapi.responses import JSONResponse
 
 from core.system import get_system_metrics
 
@@ -153,5 +156,38 @@ def api_delete_view(payload: dict = Body(...)):
         raise HTTPException(status_code=404, detail=str(error))
 
     return {"status": "ok"}
+
+
+@router.get("/views/export")
+def api_export_view(view: str):
+    try:
+        data = export_view(view)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+    return JSONResponse(
+        content=data,
+        headers={"Content-Disposition": f'attachment; filename="{view}.json"'},
+    )
+
+
+@router.post("/views/import")
+def api_import_view(payload: dict = Body(...)):
+    try:
+        view = import_view(
+            payload.get("name", ""),
+            payload.get("view", {}),
+            payload.get("title"),
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except FileExistsError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    return {
+        "status": "ok",
+        "view": view["id"],
+        "title": view.get("title"),
+    }
 
 

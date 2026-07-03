@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=11">
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
 </head>
 
 <body>
@@ -42,6 +42,10 @@
                 🗑 Удалить
             </button>
         </div>
+
+        <button id="export-view" class="settings-action-button">
+            💾 Экспортировать текущий view
+        </button>
     </div>
 
     <div class="settings-section">
@@ -59,6 +63,23 @@
         </button>
 
         <p id="create-view-state" class="small"></p>
+    </div>
+
+    <div class="settings-section">
+        <p class="small">Импорт View</p>
+
+        <input
+            type="file"
+            id="import-view-file"
+            class="settings-view-select"
+            accept="application/json,.json"
+        >
+
+        <button id="import-view" class="settings-action-button">
+            📥 Импортировать
+        </button>
+
+        <p id="import-view-state" class="small"></p>
     </div>
 
     <div class="settings-section">

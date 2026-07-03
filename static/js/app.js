@@ -7,4 +7,5 @@ document.addEventListener("DOMContentLoaded", () => {
     initViewEditorActions();
     initCreateViewAction();
     initViewManagementActions();
+    initImportExportActions();
 });

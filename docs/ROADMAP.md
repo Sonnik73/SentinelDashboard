@@ -27,6 +27,7 @@
 - Duplicate View
 - Rename View (title only — the underlying view id/URL stays stable)
 - Delete View
+- Import / Export Views
 
 ---
 
@@ -35,7 +36,6 @@
 ## Workspace
 
 - Drag & Drop Layout Editor
-- Import / Export Views
 
 ## Widgets
 

@@ -254,6 +254,60 @@ function initViewManagementActions() {
 }
 
 
+function initImportExportActions() {
+    const exportButton = document.getElementById("export-view");
+    const importButton = document.getElementById("import-view");
+    const importFile = document.getElementById("import-view-file");
+    const importState = document.getElementById("import-view-state");
+
+    if (!exportButton && !importButton) return;
+
+    if (exportButton) {
+        exportButton.addEventListener("click", () => {
+            const url = `/api/views/export?view=${encodeURIComponent(viewEditor.currentView)}`;
+            window.location.href = url;
+        });
+    }
+
+    if (importButton) {
+        importButton.addEventListener("click", async () => {
+            const file = importFile.files[0];
+
+            if (!file) {
+                importState.textContent = "⚠️ Выберите файл";
+                return;
+            }
+
+            let viewData;
+
+            try {
+                viewData = JSON.parse(await file.text());
+            } catch (error) {
+                importState.textContent = "⚠️ Файл не является корректным JSON";
+                return;
+            }
+
+            const defaultName = file.name.replace(/\.json$/i, "");
+            const name = window.prompt("Название для импортированного view:", defaultName);
+            if (!name) return;
+
+            importState.textContent = "⏳ Импорт...";
+
+            try {
+                const data = await postJson("/api/views/import", { name, view: viewData });
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("view", data.view);
+                window.location.href = url.toString();
+            } catch (error) {
+                console.error("Import view:", error);
+                importState.textContent = `⚠️ ${error.message}`;
+            }
+        });
+    }
+}
+
+
 // ------------------------------
 // View Editor State
 // ------------------------------

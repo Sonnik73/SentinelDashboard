@@ -222,6 +222,10 @@ body {
     text-align: center;
 }
 
+#export-view {
+    margin-top: 8px;
+}
+
 .hidden-widget {
     display: none !important;
 }

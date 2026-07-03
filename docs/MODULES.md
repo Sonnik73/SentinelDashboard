@@ -61,6 +61,8 @@ Provided functions:
 - `duplicate_view(source_name, new_name, new_title)` — copy an existing view's layout into a new file, exposed via `POST /api/views/duplicate` and the "📋 Дублировать" button
 - `rename_view(name, new_title)` — changes only the `title` field, not the file/id, so existing `?view=<id>` links keep working. Exposed via `POST /api/views/rename` and the "✏️ Переименовать" button
 - `delete_view(name)` — deletes a view file; refuses to delete the view named `default` (`DEFAULT_VIEW`) since `load_view()` falls back to it when a requested view doesn't exist. Exposed via `POST /api/views/delete` and the "🗑 Удалить" button, which the frontend also disables client-side when the current view is `default` (`is_default` flag from `GET /api/views`)
+- `export_view(name)` — returns a view's raw on-disk JSON (`title` + `layout`, no `id`). Exposed via `GET /api/views/export?view=<id>`, which sends it as a downloadable file (`Content-Disposition: attachment`) via the "💾 Экспортировать" button
+- `import_view(name, view_data, title)` — validates `view_data` has a `layout` list of rows and writes it as a new view file. Exposed via `POST /api/views/import`. The frontend reads the uploaded `.json` file client-side with the browser's File API and sends the parsed JSON in the request body, rather than a multipart upload — keeps the backend on plain JSON bodies like every other view endpoint and avoids adding `python-multipart` as a new dependency
 
 ---
 
