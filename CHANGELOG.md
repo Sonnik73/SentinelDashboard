@@ -4,6 +4,17 @@
 
 ---
 
+## v2.2.0
+
+### Added
+- Import / Export Views — the last item of ROADMAP.md's Workspace section besides Drag & Drop
+- `GET /api/views/export?view=<id>` downloads a view's raw JSON (`export_view()` in modules/views/service.py), served with `Content-Disposition: attachment` via a new "💾 Экспортировать текущий view" button
+- `POST /api/views/import` creates a new view from uploaded JSON (`import_view()`), validating that `layout` is a list of rows before writing anything to disk. The frontend reads the uploaded `.json` file with the browser's File API and sends the parsed JSON in a normal request body — same pattern as every other view endpoint, and avoids adding `python-multipart` as a new dependency just for file uploads
+- Settings drawer: new "Импорт View" section (file picker + button) and an "Экспортировать текущий view" button next to Duplicate/Rename/Delete
+- Verified end-to-end in a browser: real file download via Export, real file upload via Import (including a full export→import round-trip reproducing the exact layout), and the invalid-JSON-file error path caught client-side before ever reaching the server
+
+---
+
 ## v2.1.0
 
 ### Added
