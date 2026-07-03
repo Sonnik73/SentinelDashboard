@@ -4,6 +4,13 @@
 
 ---
 
+## v1.6.1
+
+### Fixed
+- First real-hardware test of v1.6.0 (on the actual Pi, with real internet access) found that `https://rp5.ru/Погода_в_Москве` isn't a weather page at all — for cities with more than one weather station, that URL is a region-overview "hub" page with a map and links to individual stations, not a forecast table. Only single-station cities like Ulyanovsk happen to work at that short URL by coincidence. Confirmed the correct URL for Moscow directly from a real page: `https://rp5.ru/Погода_в_Москве_(ВДНХ)` (the "Москва (ВДНХ)" station link visible in the hub page's own navigation). `config/dashboard.json` updated; Krasnodar's URL still needs the same real-page verification
+
+---
+
 ## v1.6.0
 
 ### Changed
