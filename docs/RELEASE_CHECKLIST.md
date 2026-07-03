@@ -48,9 +48,9 @@ This checklist tracks the public release audit. Update it as each item is comple
 
 ## Stage E — Release
 
-- [ ] `git status` clean — no untracked files that should be committed or ignored
-- [ ] All documentation cross-references verified (no broken links between docs)
-- [ ] examples/example_widget/ tested end-to-end as a new-module template
+- [x] `git status` clean — verified after every commit this session
+- [x] All documentation cross-references verified: all `.md`-to-`.md` links and anchors (`#module-system`, `#requirements`) resolve correctly. Found and fixed: README.md's Documentation list was missing links to MODULES.md and RELEASE_CHECKLIST.md; README.md's "Current Version: v1.2.4" was stale (same class of bug as the v0.8.2 dashboard footer fixed in v1.3.5) — now points to VERSION/CHANGELOG.md instead of a hardcoded number
+- [x] examples/example_widget/ tested end-to-end: copied to modules/example/ + templates/widgets/example.html exactly per its own README, auto-discovered with zero code changes (`/api/widgets` and `/api/example` both worked), added to a view, rendered correctly as a "Loading..." placeholder in a browser (matching the documented "frontend wiring is manual" behavior) with no console errors. Cleaned up afterward — example_widget stays a template, not a shipped module
 - [ ] Final version bump to `2.0.0`
 - [ ] Release tag created and pushed (`git tag v2.0.0 && git push --tags`)
 

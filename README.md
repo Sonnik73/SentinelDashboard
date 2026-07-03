@@ -131,7 +131,9 @@ http://192.168.88.107:8000
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [ENGINEERING.md](docs/ENGINEERING.md)
+- [MODULES.md](docs/MODULES.md)
 - [ROADMAP.md](docs/ROADMAP.md)
+- [RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md)
 
 ---
 
@@ -151,7 +153,7 @@ One feature → Validation → Commit → Push
 
 # Current Status
 
-**Current Version:** v1.2.4
+**Current Version:** see [VERSION](VERSION) / [CHANGELOG.md](CHANGELOG.md)
 
 ## Completed (Stable v1)
 
