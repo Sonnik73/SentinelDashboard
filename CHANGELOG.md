@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.4
+
+### Fixed
+- static/js/widgets.js: updateSystemMetrics/updateWeather/updateRSS/updateNetwork now bail out early if their widget isn't in the DOM (matching the guard updateBirthdays already had). Previously any view that didn't include a widget (e.g. config/views/wall.json, which only has weather+rss) caused those updaters to throw on every interval and spam the console indefinitely
+
+---
+
 ## v1.3.3
 
 ### Investigated
