@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.9
+
+### Confirmed
+- The `system` module's special-cased wiring (no service.py/api.py, hardcoded route in routes/api.py) is an intentional, permanent exception to the module convention, not technical debt — closes the last open decision item in Stage C of RELEASE_CHECKLIST.md besides create_view() and the Python review
+
+---
+
 ## v1.3.8
 
 ### Removed
