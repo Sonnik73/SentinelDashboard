@@ -13,6 +13,7 @@ async function loadSettingsDrawer() {
         viewEditor.currentIsDefault = Boolean(data.current.is_default);
         viewEditor.originalLayout = JSON.parse(JSON.stringify(data.layout || []));
         viewEditor.currentLayout = JSON.parse(JSON.stringify(data.layout || []));
+        viewEditor.widgetOrder = getCurrentWidgets();
         updateEditorState();
 
         document.getElementById("settings-current-view").textContent =
@@ -107,16 +108,17 @@ function initSettingsDrawer() {
         drawer.classList.add("open");
         overlay.classList.add("open");
         loadSettingsDrawer();
+        setLayoutCellsDraggable(true);
     }
 
     function closeDrawer() {
         drawer.classList.remove("open");
         overlay.classList.remove("open");
+        setLayoutCellsDraggable(false);
     }
 
     button.addEventListener("click", openDrawer);
     close.addEventListener("click", closeDrawer);
-    overlay.addEventListener("click", closeDrawer);
 }
 
 
@@ -317,6 +319,7 @@ const viewEditor = {
     currentLayout: [],
     currentView: "",
     currentIsDefault: false,
+    widgetOrder: [],
 };
 
 function getCurrentWidgets() {
@@ -365,15 +368,27 @@ function setWidgetSpan(widgetId, span) {
 }
 
 function buildLayoutFromSettings(container) {
-    const selected = Array.from(
-        container.querySelectorAll("input[type='checkbox']:checked")
-    ).map(input => input.dataset.widgetId);
+    const checkedIds = new Set(
+        Array.from(container.querySelectorAll("input[type='checkbox']:checked"))
+            .map(input => input.dataset.widgetId)
+    );
+
+    // widgetOrder is the source of truth for widget order (drag & drop
+    // changes it directly) - keep it in sync with which boxes are
+    // checked without disturbing the order of widgets that stay checked
+    viewEditor.widgetOrder = viewEditor.widgetOrder.filter(id => checkedIds.has(id));
+
+    checkedIds.forEach(id => {
+        if (!viewEditor.widgetOrder.includes(id)) {
+            viewEditor.widgetOrder.push(id);
+        }
+    });
 
     const rows = [];
     let currentRow = [];
     let currentWidth = 0;
 
-    selected.forEach(widgetId => {
+    viewEditor.widgetOrder.forEach(widgetId => {
         const select = container.querySelector(`[data-widget-span="${widgetId}"]`);
         const span = select ? Number(select.value) : getWidgetSpan(widgetId);
 
@@ -450,6 +465,68 @@ function applyView() {
     });
 }
 
+// ------------------------------
+// Drag & Drop reordering
+// ------------------------------
+
+function setLayoutCellsDraggable(enabled) {
+    document.querySelectorAll(".layout-cell").forEach(cell => {
+        cell.draggable = enabled;
+        cell.classList.toggle("draggable", enabled);
+    });
+}
+
+function reorderWidget(draggedId, targetId) {
+    const order = viewEditor.widgetOrder;
+    const fromIndex = order.indexOf(draggedId);
+    const toIndex = order.indexOf(targetId);
+
+    if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+
+    order.splice(fromIndex, 1);
+    order.splice(order.indexOf(targetId), 0, draggedId);
+
+    const container = document.getElementById("settings-widgets");
+    if (container) {
+        viewEditor.currentLayout = buildLayoutFromSettings(container);
+    }
+
+    updateEditorState();
+    applyView();
+}
+
+function initDragAndDrop() {
+    document.querySelectorAll(".layout-cell").forEach(cell => {
+        const card = cell.querySelector("[data-widget]");
+        if (!card) return;
+
+        cell.addEventListener("dragstart", event => {
+            event.dataTransfer.setData("text/plain", card.dataset.widget);
+            event.dataTransfer.effectAllowed = "move";
+            cell.classList.add("dragging");
+        });
+
+        cell.addEventListener("dragend", () => {
+            cell.classList.remove("dragging");
+        });
+
+        cell.addEventListener("dragover", event => {
+            if (!cell.draggable) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+        });
+
+        cell.addEventListener("drop", event => {
+            if (!cell.draggable) return;
+            event.preventDefault();
+
+            const draggedId = event.dataTransfer.getData("text/plain");
+            reorderWidget(draggedId, card.dataset.widget);
+        });
+    });
+}
+
+
 function updateEditorState() {
     const state = document.getElementById("settings-state");
     const reset = document.getElementById("reset-view");
@@ -495,6 +572,7 @@ function initViewEditorActions() {
         resetButton.addEventListener("click", () => {
 
             viewEditor.currentLayout = JSON.parse(JSON.stringify(viewEditor.originalLayout));
+            viewEditor.widgetOrder = getOriginalWidgets();
 
             document.querySelectorAll("#settings-widgets input").forEach(input => {
                 input.checked = getOriginalWidgets().includes(input.dataset.widgetId);

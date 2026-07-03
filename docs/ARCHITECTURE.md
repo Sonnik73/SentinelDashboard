@@ -186,6 +186,14 @@ Layout changes are immediately reflected in the browser without reloading the pa
 
 The editor works entirely with the Layout Model. This includes widgets that weren't part of the current view when the page was loaded: `templates/dashboard.html` server-renders every registered widget module, not just the ones in the current view's layout — widgets outside the layout are rendered into a hidden `#widget-pool` (`display: none` via the `.hidden-widget` CSS class). `static/js/settings.js`'s `applyView()` looks up `.layout-cell` elements anywhere in the document, so toggling a widget in Settings can move its card from the pool into the visible grid (or back) without a page reload.
 
+## Drag & Drop Reordering
+
+While the Settings drawer is open, widget cards in the grid are draggable (native HTML5 Drag and Drop API, no library). `viewEditor.widgetOrder` in `settings.js` is the source of truth for widget order — dragging a card reorders it directly, and `buildLayoutFromSettings()` re-packs that order into rows using each widget's span, same as it already did for the checkbox-driven layout. Checking/unchecking a widget appends/removes it from `widgetOrder` without disturbing the order of widgets that stay checked.
+
+This required removing `.settings-overlay`'s click-to-close behavior: the overlay used to cover the entire viewport (including the grid) to let a click anywhere outside the drawer close it, which made the grid completely unclickable — and therefore undraggable — while the drawer was open. The overlay is now `pointer-events: none` (a purely visual dimming layer); closing the drawer is done via the × button only.
+
+Mouse-only for now — native HTML5 drag-and-drop doesn't fire on touch devices. Touch/tablet support is tracked separately under Tablet Mode in `docs/ROADMAP.md`.
+
 ---
 
 # Development Workflow

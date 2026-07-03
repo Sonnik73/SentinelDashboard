@@ -162,6 +162,10 @@ body {
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
     z-index: 1000;
+    /* Purely visual dimming - the grid stays clickable underneath so
+       widgets can be dragged while the drawer is open. Closing the
+       drawer is done via the X button, not by clicking outside. */
+    pointer-events: none;
 }
 
 .settings-overlay.open {
@@ -241,6 +245,14 @@ body {
 
 .layout-cell {
     min-width: 0;
+}
+
+.layout-cell.draggable {
+    cursor: grab;
+}
+
+.layout-cell.dragging {
+    opacity: 0.4;
 }
 
 .layout-cell.span-1 {

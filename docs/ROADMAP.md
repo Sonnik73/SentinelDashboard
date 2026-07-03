@@ -28,14 +28,11 @@
 - Rename View (title only — the underlying view id/URL stays stable)
 - Delete View
 - Import / Export Views
+- Drag & Drop Layout Editor (mouse only — see Roadmap's Layout section for touch/tablet support)
 
 ---
 
 # Version 2.1
-
-## Workspace
-
-- Drag & Drop Layout Editor
 
 ## Widgets
 
