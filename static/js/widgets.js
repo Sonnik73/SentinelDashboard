@@ -3,6 +3,8 @@
 // ------------------------------
 
 async function updateSystemMetrics() {
+    if (!document.getElementById("cpu")) return;
+
     try {
         const data = await apiGet("/api/system");
 
@@ -25,6 +27,9 @@ async function updateSystemMetrics() {
 
 
 async function updateWeather() {
+    const container = document.getElementById("weather-list");
+    if (!container) return;
+
     try {
         const data = await apiGet("/api/weather");
 
@@ -35,7 +40,6 @@ async function updateWeather() {
         document.getElementById("weather-sync").textContent =
             data.last_sync ?? "---";
 
-        const container = document.getElementById("weather-list");
         container.innerHTML = "";
 
         data.cities.forEach(city => {
@@ -56,6 +60,9 @@ async function updateWeather() {
 
 
 async function updateRSS() {
+    const container = document.getElementById("rss-list");
+    if (!container) return;
+
     try {
         const data = await apiGet("/api/rss");
 
@@ -66,7 +73,6 @@ async function updateRSS() {
         document.getElementById("rss-sync").textContent =
             data.last_sync ?? "---";
 
-        const container = document.getElementById("rss-list");
         container.innerHTML = "";
 
         data.items.slice(0, 5).forEach(item => {
@@ -87,11 +93,11 @@ async function updateRSS() {
 
 
 async function updateBirthdays() {
+    const container = document.getElementById("birthdays-list");
+    if (!container) return;
+
     try {
         const data = await apiGet("/api/birthdays");
-
-        const container = document.getElementById("birthdays-list");
-        if (!container) return;
 
         container.innerHTML = "";
 
@@ -121,6 +127,9 @@ async function updateBirthdays() {
 
 
 async function updateNetwork() {
+    const container = document.getElementById("network-list");
+    if (!container) return;
+
     try {
         const data = await apiGet("/api/network");
 
@@ -128,7 +137,6 @@ async function updateNetwork() {
         document.getElementById("network-ip").textContent = data.ip ?? "---";
         document.getElementById("network-sync").textContent = data.last_sync ?? "---";
 
-        const container = document.getElementById("network-list");
         container.innerHTML = "";
 
         data.hosts.forEach(host => {
