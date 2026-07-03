@@ -4,6 +4,13 @@
 
 ---
 
+## v1.3.5
+
+### Fixed
+- Dashboard footer showed a hardcoded "v0.8.2" that was never updated since it was written, while the real version (already tracked in VERSION and exposed via /api/info) is v1.3.5. routes/dashboard.py now passes core.version.get_version() into the template context and templates/dashboard.html renders it
+
+---
+
 ## v1.3.4
 
 ### Fixed
