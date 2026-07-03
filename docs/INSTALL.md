@@ -22,15 +22,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 4. Configure the weather API key
+## 4. Configure weather city URLs
 
-The weather widget uses the [Yandex Weather API](https://yandex.ru/dev/weather/), which requires a free API key. Get one from the Yandex Developer Console (the free "on your site" plan is capped at 50 requests/day, which is enough for this dashboard's built-in throttling — see [MODULES.md](MODULES.md)), then set it as an environment variable before starting the app:
-
-```bash
-export YANDEX_WEATHER_API_KEY=your-key-here
-```
-
-If the key isn't set, the weather widget falls back to cached/error state instead of crashing — the rest of the dashboard is unaffected.
+The weather widget scrapes rp5.ru — no API key needed, but each city in `config/dashboard.json` under `weather.cities` needs its exact rp5.ru page URL (there's no reliable way to generate it from a city name). To find it: visit rp5.ru, search for your city, and copy the address bar (e.g. `https://rp5.ru/Погода_в_Ульяновске`). See [MODULES.md](MODULES.md) for details.
 
 ## 5. Run the dashboard
 
@@ -61,7 +55,6 @@ After=network.target
 Type=simple
 User=<your-username>
 WorkingDirectory=/home/<your-username>/sentinel
-Environment=YANDEX_WEATHER_API_KEY=your-key-here
 ExecStart=/home/<your-username>/sentinel/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=5

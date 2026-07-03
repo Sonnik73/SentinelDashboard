@@ -1,4 +1,4 @@
-import os
+import re
 from datetime import datetime
 
 import httpx
@@ -10,35 +10,66 @@ from core.time import now, now_string, DEFAULT_TIME_FORMAT
 WEATHER_CONFIG = get_section("weather")
 CITIES = WEATHER_CONFIG["cities"]
 
-YANDEX_API_URL = "https://api.weather.yandex.ru/v2/informers"
+# rp5.ru has no documented API and no request quota, but scraping it is a
+# fragile dependency on undocumented page structure - keep the request rate
+# polite instead of hammering it on every /api/weather call.
+MIN_REFRESH_SECONDS = 1800
 
-# Yandex's free "on your site" plan caps at 50 requests/day total. With 3
-# configured cities, refreshing more often than this risks running out of
-# quota mid-day, especially with more than one browser/device polling the
-# dashboard at once. 3 cities x 12 refreshes/day = 36 requests/day.
-MIN_REFRESH_SECONDS = 7200
+USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+# Extracted from a real rp5.ru city page (desktop version, not m.rp5.ru -
+# the mobile site loads its hourly table via JS and doesn't have these
+# values in the raw HTML). Each pattern is anchored on a CSS class or help
+# text that looked stable, then matched against the nearest following
+# value in the forecast table's first (nearest-time) column.
+TEMPERATURE_PATTERN = re.compile(r'class="t_0"><b>([+-]?)<span class="otstup"[^>]*></span>(\d+)</b>')
+HUMIDITY_PATTERN = re.compile(r'<td class="[^"]*">(\d+)</td>')
+WIND_SPEED_PATTERN = re.compile(r'class="wv_0[^"]*"[^>]*>(\d+)</div>')
+
+HUMIDITY_MARKER = 'title="Относительная влажность на высоте 1.5 м (%)">Влажность</a>'
 
 
-def fetch_city_weather(city, api_key):
+def extract_after(html, marker, pattern, window=2000):
+    start = html.find(marker)
+
+    if start == -1:
+        raise ValueError(f"rp5.ru page layout changed: marker not found ({marker!r})")
+
+    match = pattern.search(html, start, start + window)
+
+    if not match:
+        raise ValueError(f"rp5.ru page layout changed: value not found after marker ({marker!r})")
+
+    return match
+
+
+def fetch_city_weather(city):
     response = httpx.get(
-        YANDEX_API_URL,
-        params={
-            "lat": city["latitude"],
-            "lon": city["longitude"],
-            "lang": "ru_RU",
-        },
-        headers={"X-Yandex-Weather-Key": api_key},
-        timeout=5,
+        city["url"],
+        headers={"User-Agent": USER_AGENT},
+        timeout=10,
     )
     response.raise_for_status()
 
-    fact = response.json()["fact"]
+    html = response.text
+
+    temp_match = extract_after(html, 'class="t_temperature"', TEMPERATURE_PATTERN)
+    temperature = int(temp_match.group(2)) * (-1 if temp_match.group(1) == "-" else 1)
+
+    humidity_match = extract_after(html, HUMIDITY_MARKER, HUMIDITY_PATTERN)
+    humidity = int(humidity_match.group(1))
+
+    wind_match = extract_after(html, 'class="t_wind_velocity"', WIND_SPEED_PATTERN)
+    wind_speed = int(wind_match.group(1))
 
     return {
         "name": city["name"],
-        "temperature": fact.get("temp"),
-        "humidity": fact.get("humidity"),
-        "wind_speed": fact.get("wind_speed"),
+        "temperature": temperature,
+        "humidity": humidity,
+        "wind_speed": wind_speed,
     }
 
 
@@ -57,15 +88,10 @@ def get_weather():
         return cached_data
 
     try:
-        api_key = os.environ.get("YANDEX_WEATHER_API_KEY")
-
-        if not api_key:
-            raise RuntimeError("YANDEX_WEATHER_API_KEY is not set")
-
         weather_data = {
             "source": "online",
             "last_sync": now_string(),
-            "cities": [fetch_city_weather(city, api_key) for city in CITIES],
+            "cities": [fetch_city_weather(city) for city in CITIES],
         }
 
         save_cache("weather", weather_data)

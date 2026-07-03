@@ -4,5 +4,5 @@
     "icon": "🌤",
     "type": "widget",
     "enabled": true,
-    "refresh": 7200
+    "refresh": 1800
 }
