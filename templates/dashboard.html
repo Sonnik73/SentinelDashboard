@@ -82,6 +82,16 @@
 
 </div>
 
+<div id="widget-pool" class="hidden-widget">
+    {% for widget_id, template in widget_templates.items() %}
+        {% if widget_id not in visible_widgets %}
+        <div class="layout-cell span-12">
+            {% include template ignore missing %}
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
 <script src="/static/js/api.js?v=1"></script>
 <script src="/static/js/ui.js?v=1"></script>
 <script src="/static/js/widgets.js?v=1"></script>

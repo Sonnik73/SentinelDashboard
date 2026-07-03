@@ -184,7 +184,7 @@ Widgets are reusable and independent.
 
 Layout changes are immediately reflected in the browser without reloading the page.
 
-The editor works entirely with the Layout Model.
+The editor works entirely with the Layout Model. This includes widgets that weren't part of the current view when the page was loaded: `templates/dashboard.html` server-renders every registered widget module, not just the ones in the current view's layout — widgets outside the layout are rendered into a hidden `#widget-pool` (`display: none` via the `.hidden-widget` CSS class). `static/js/settings.js`'s `applyView()` looks up `.layout-cell` elements anywhere in the document, so toggling a widget in Settings can move its card from the pool into the visible grid (or back) without a page reload.
 
 ---
 

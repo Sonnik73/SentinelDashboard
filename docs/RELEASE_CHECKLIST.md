@@ -28,7 +28,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 ## Stage C — Code Audit
 
 - [ ] Python — review all modules for consistency with ENGINEERING.md principles
-- [ ] JavaScript — review static/js/*.js for consistency (vanilla JS only, no leftover dead code)
+- [x] JavaScript — reviewed static/js/*.js for consistency. Found and fixed 3 issues: widget updaters in widgets.js didn't guard against missing DOM elements (v1.3.4); dashboard.html footer showed a hardcoded stale version (v1.3.5); Live Preview silently did nothing for widgets outside the current view's server-rendered layout, now fixed with a hidden widget-pool render (v1.3.6)
 - [ ] Known candidate: `create_view()` in modules/views/service.py is implemented but not wired to any API endpoint — decide whether to expose it or remove it
 - [ ] Confirm the `system` module's special-cased wiring (no service.py/api.py of its own) is intentional and documented, or refactor to match the standard module convention
 - [ ] The `refresh` field in every module's manifest.json is not read anywhere in the frontend — refresh intervals are hardcoded per-widget in static/js/widgets.js instead. Decide whether to wire manifest refresh values into the frontend or remove the unused field from manifests
