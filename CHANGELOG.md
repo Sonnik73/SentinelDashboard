@@ -4,6 +4,15 @@
 
 ---
 
+## v1.6.2
+
+### Fixed
+- `HUMIDITY_PATTERN` in modules/weather/service.py was too strict: it required `<td class="...">` to be immediately followed by the value, but real rp5.ru pages sometimes render that cell with extra `onmouseover`/`onmouseout` tooltip attributes in between (`<td class="d underlineRow " onmouseover="tooltip(...)" onmouseout="...">44</td>`), which made the regex fail to match even though the marker itself was found. `WIND_SPEED_PATTERN` already tolerated this (`[^>]*`) but `HUMIDITY_PATTERN` and `TEMPERATURE_PATTERN` didn't — both now do, for consistency. Found via a real second round of hardware testing; verified against both the original clean saved page and the real page with tooltip attributes
+- Krasnodar's rp5.ru URL was hitting the same multi-station "hub" page problem as Moscow did in v1.6.1 — confirmed the correct station URL directly from a real page: `https://rp5.ru/Погода_в_Краснодаре,_Краснодарский_край`
+- `extract_after()`'s search window raised from 2000 to 3000 chars for extra margin against real pages being more verbose than the reference sample used during development
+
+---
+
 ## v1.6.1
 
 ### Fixed
