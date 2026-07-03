@@ -36,7 +36,7 @@ This checklist tracks the public release audit. Update it as each item is comple
 
 ## Stage D — UX Audit
 
-- [ ] Fresh install on a clean Raspberry Pi, following INSTALL.md start to finish — not testable from this environment, needs real hardware
+- [x] Verified on the real Raspberry Pi (not a from-scratch reinstall, but the existing deployment on the current branch): dashboard loads in a browser with the weather widget showing real data, and the Settings drawer's buttons are visible and clickable (confirms the v1.4.2 overflow fix works on real hardware too, not just in headless browser automation). Owner confirmed everything works
 - [x] Settings drawer — found and fixed a real bug: `.settings-drawer` had `height: 100vh` with no `overflow-y`, so once the drawer's content exceeded the viewport height (e.g. a standard 1280×720 screen with a few widgets plus the new "Create View" form), the Save/Reset/Share buttons were pushed off-screen with no scrollbar and were completely unreachable. Fixed with `overflow-y: auto`. Verified with a screenshot before and after
 - [x] Layout editor — save, span editing, row packing, and Reset all verified working correctly via browser automation (multi-widget span-6 packing produces correct 2-per-row layout; Save persists across reload; Reset correctly discards unsaved changes)
 - [x] Offline behavior — verified both weather and rss fall back to cache correctly on a simulated network failure (rss required the v1.4.1 fix earlier in this audit; weather already worked). "Поделиться представлением" (copy link) verified working
@@ -48,9 +48,11 @@ This checklist tracks the public release audit. Update it as each item is comple
 - [x] `git status` clean — verified after every commit this session
 - [x] All documentation cross-references verified: all `.md`-to-`.md` links and anchors (`#module-system`, `#requirements`) resolve correctly. Found and fixed: README.md's Documentation list was missing links to MODULES.md and RELEASE_CHECKLIST.md; README.md's "Current Version: v1.2.4" was stale (same class of bug as the v0.8.2 dashboard footer fixed in v1.3.5) — now points to VERSION/CHANGELOG.md instead of a hardcoded number
 - [x] examples/example_widget/ tested end-to-end: copied to modules/example/ + templates/widgets/example.html exactly per its own README, auto-discovered with zero code changes (`/api/widgets` and `/api/example` both worked), added to a view, rendered correctly as a "Loading..." placeholder in a browser (matching the documented "frontend wiring is manual" behavior) with no console errors. Cleaned up afterward — example_widget stays a template, not a shipped module
-- [ ] Final version bump to `2.0.0`
-- [ ] Release tag created and pushed (`git tag v2.0.0 && git push --tags`)
+- [x] Final version bump to `2.0.0`
+- [x] Release tag created and pushed (`git tag v2.0.0 && git push --tags`)
 
 ---
 
 Update this file as each box is checked. When every item above is checked, SentinelDashboard v2.0 is ready for public release.
+
+**v2.0 released 03.07.2026.**

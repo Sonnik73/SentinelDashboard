@@ -155,7 +155,7 @@ One feature → Validation → Commit → Push
 
 **Current Version:** see [VERSION](VERSION) / [CHANGELOG.md](CHANGELOG.md)
 
-## Completed (Stable v1)
+## Completed (v2.0)
 
 - Widget System
 - View Engine
@@ -164,8 +164,10 @@ One feature → Validation → Commit → Push
 - Layout Editor
 - Modular API architecture
 - Automatic module discovery
+- Create View
+- Weather via rp5.ru (offline-cached, confirmed working on real hardware)
 
-## Planned (after v2.0)
+## Planned (v2.1+)
 
 - Drag & Drop
 - View Manager
