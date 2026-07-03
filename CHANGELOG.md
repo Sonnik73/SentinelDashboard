@@ -4,6 +4,13 @@
 
 ---
 
+## v2.0.1
+
+### Changed
+- docs/ROADMAP.md's "Version 2.0" section renamed to "Version 2.1" now that v2.0 has actually shipped
+
+---
+
 ## v2.0.0
 
 Public v2.0 release. All five stages of the RELEASE_CHECKLIST.md audit are complete — see it for the full breakdown of what was found and fixed at each stage (documentation, repository cleanup, code audit, UX audit, release). Highlights since v1.2.4 (the last version README used to reference):
