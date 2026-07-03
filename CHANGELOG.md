@@ -4,6 +4,20 @@
 
 ---
 
+## v1.4.1
+
+### Fixed
+- modules/rss/service.py: `feedparser.parse()` never raises on network failure (confirmed empirically — a DNS/connection error just yields `bozo=True, entries=[]`), so get_rss()'s try/except never caught real outages. On a network outage this silently returned `{"source": "online", "items": []}` and **overwrote the last good cache with an empty list** — the exact offline-cache bug the project documents itself as protecting against, just via a different mechanism than the weather timeout bug fixed in v1.3.2. fetch_feed() now raises when a feed returns no entries with `bozo` set (verified this doesn't false-positive on feeds that parse with cosmetic XML issues but still have entries)
+- get_rss()'s cache fallback now records `cached_data["error"]`, matching get_weather()'s existing behavior for the same documented pattern
+
+### Changed
+- core/system.py, modules/weather/service.py: fixed a few lines mixing tabs and spaces for indentation
+
+### Removed
+- `get_view_widgets()` in modules/views/service.py — dead code, never called anywhere
+
+---
+
 ## v1.4.0
 
 ### Added
