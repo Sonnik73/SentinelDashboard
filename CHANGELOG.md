@@ -4,6 +4,24 @@
 
 ---
 
+## v2.3.0
+
+### Added
+- Drag & Drop Layout Editor — closes out ROADMAP.md's Workspace section entirely. Native HTML5 Drag and Drop API, no new library, matching the vanilla-JS constraint
+- `viewEditor.widgetOrder` in static/js/settings.js is now the source of truth for widget order (previously implicit in checkbox DOM order); `buildLayoutFromSettings()` packs that order into rows by span exactly as before. Checking/unchecking a widget appends/removes it from `widgetOrder` without disturbing the order of widgets that stay checked
+- Widget cards become draggable while the Settings drawer is open; dropping one onto another reorders `widgetOrder` and re-renders immediately via the existing `applyView()`/row-packing logic
+
+### Fixed
+- Found while building drag & drop: `.settings-overlay` covered the entire viewport (including the grid) to support "click anywhere outside the drawer closes it" — which made the grid completely unclickable, and therefore undraggable, whenever the drawer was open. Changed the overlay to `pointer-events: none` (visual dimming only) and removed the click-to-close handler; closing the drawer is now via the × button only
+
+### Known limitation
+- Drag & drop is mouse-only — native HTML5 DnD doesn't fire on touch devices. Touch/tablet support is a separate, already-tracked ROADMAP.md item (Tablet Mode)
+
+### Verified
+- End-to-end in a browser: dragging a card reorders the grid and marks the view as having unsaved changes; Save persists the new order across reload; closing via the × button and disabling drag on close both still work; a newly-checked widget (previously in the hidden pool) can immediately be dragged like any other
+
+---
+
 ## v2.2.0
 
 ### Added
