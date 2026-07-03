@@ -4,6 +4,21 @@
 
 ---
 
+## v1.4.2
+
+### Fixed
+- static/css/style.css: `.settings-drawer` had `height: 100vh` with no `overflow-y`, so once its content exceeded the viewport height (a normal 1280×720 screen with the widget list plus the new "Create View" form was already enough), the Save/Reset/Share buttons were pushed off-screen with no way to scroll to them — completely unreachable. Added `overflow-y: auto`. Verified with before/after screenshots
+
+### Verified (Stage D UX audit, no code change needed)
+- Layout editor: span-based row packing, Save (persists across reload), Reset (discards unsaved changes), and the copy-view-link button all work correctly
+- Offline behavior: weather and rss both correctly fall back to cache on a simulated network failure
+- Error handling: missing data/birthdays.json and unreachable network hosts both degrade gracefully without crashing
+
+### Documented, not fixed (deferred — architectural change)
+- An invalid config/dashboard.json doesn't crash the server, but produces a confusing partial failure: /api/weather, /api/rss, /api/network return a plain 404, while /api/widgets still reports those modules as enabled, so Settings offers them as normal widgets that silently never load. Tracked in ROADMAP.md under Platform
+
+---
+
 ## v1.4.1
 
 ### Fixed
