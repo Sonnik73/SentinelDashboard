@@ -4,6 +4,13 @@
 
 ---
 
+## v1.6.3
+
+### Confirmed
+- Weather (rp5.ru scraping) confirmed fully working on the real Raspberry Pi: `curl /api/weather` returns `"source": "online"` with real numbers for all three configured cities (Москва 26°C/44%, Краснодар 29°C/57%, Ульяновск 30°C/35%). Closes out the weather item in Stage D of RELEASE_CHECKLIST.md — the only real-hardware-only item left is a full fresh-install walkthrough of INSTALL.md
+
+---
+
 ## v1.6.2
 
 ### Fixed
