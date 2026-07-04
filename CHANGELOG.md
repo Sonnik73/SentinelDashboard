@@ -4,6 +4,23 @@
 
 ---
 
+## v2.8.0
+
+Closes out `docs/ROADMAP.md`'s "Version 2.1" Layout and Platform sections in full (everything except the three planned widgets — Meshtastic, Zabbix, Notifications — which stay open for a future sprint):
+
+- Module Load-Failure Visibility (v2.7.1)
+- Widget Height (v2.7.2)
+- Widget Lock (v2.7.3)
+- Responsive Layout (v2.7.4)
+- Tablet Mode / touch drag & drop (v2.7.5)
+- Widget Framework / Plugin Architecture (v2.7.6)
+- RSS Source Config UI (v2.7.7)
+- Widget Fullscreen (v2.7.8, added mid-sprint on request)
+
+Wall Mode and Widget Resize turned out to already be satisfied by existing features (an ordinary view, the span dropdown) and needed no new code. See each patch version above for the full detail on its change.
+
+---
+
 ## v2.7.8
 
 ### Added
