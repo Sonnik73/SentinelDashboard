@@ -754,6 +754,22 @@ function reorderWidget(draggedId, targetId) {
     applyView();
 }
 
+// Touch state shared across all cells' touch listeners below - HTML5
+// native drag & drop (dragstart/dragover/drop) never fires on touch
+// devices at all, so tablets need a separate touchstart/touchmove/touchend
+// implementation reaching the same reorderWidget() outcome. Touch events
+// keep firing on the element where the touch started, unlike mouse
+// dragover which fires on whatever's under the pointer - elementFromPoint()
+// is what finds the actual cell under the finger as it moves.
+let touchDraggedCell = null;
+let touchDraggedId = null;
+let touchTargetCell = null;
+
+function findCellAtPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el ? el.closest(".layout-cell") : null;
+}
+
 function initDragAndDrop() {
     document.querySelectorAll(".layout-cell").forEach(cell => {
         const card = cell.querySelector("[data-widget]");
@@ -781,6 +797,47 @@ function initDragAndDrop() {
 
             const draggedId = event.dataTransfer.getData("text/plain");
             reorderWidget(draggedId, card.dataset.widget);
+        });
+
+        cell.addEventListener("touchstart", () => {
+            if (!cell.draggable) return;
+            touchDraggedCell = cell;
+            touchDraggedId = card.dataset.widget;
+            cell.classList.add("dragging");
+        }, { passive: true });
+
+        cell.addEventListener("touchmove", event => {
+            if (!touchDraggedCell) return;
+            event.preventDefault();
+
+            const touch = event.touches[0];
+            const target = findCellAtPoint(touch.clientX, touch.clientY);
+
+            if (touchTargetCell && touchTargetCell !== target) {
+                touchTargetCell.classList.remove("drag-over");
+            }
+            if (target && target !== touchDraggedCell && target.draggable) {
+                target.classList.add("drag-over");
+            }
+            touchTargetCell = target;
+        }, { passive: false });
+
+        cell.addEventListener("touchend", () => {
+            if (!touchDraggedCell) return;
+
+            if (touchTargetCell) {
+                touchTargetCell.classList.remove("drag-over");
+
+                const targetCard = touchTargetCell.querySelector("[data-widget]");
+                if (targetCard && touchTargetCell !== touchDraggedCell && touchTargetCell.draggable) {
+                    reorderWidget(touchDraggedId, targetCard.dataset.widget);
+                }
+            }
+
+            touchDraggedCell.classList.remove("dragging");
+            touchDraggedCell = null;
+            touchDraggedId = null;
+            touchTargetCell = null;
         });
     });
 }

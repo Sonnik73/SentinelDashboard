@@ -294,6 +294,11 @@ body {
     opacity: 0.4;
 }
 
+.layout-cell.drag-over {
+    outline: 2px dashed #1f6feb;
+    outline-offset: 2px;
+}
+
 .layout-cell.span-1 {
     grid-column: span 1;
 }
