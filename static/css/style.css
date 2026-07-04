@@ -213,6 +213,15 @@ body {
     margin: 10px 0;
 }
 
+.settings-widget-unavailable span {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.settings-widget-warning {
+    cursor: help;
+}
+
 
 .settings-actions {
     display: flex;

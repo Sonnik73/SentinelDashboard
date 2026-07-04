@@ -52,15 +52,20 @@ async function loadSettingsDrawer() {
 
         data.available_widgets.forEach(widget => {
             const checked = data.widgets.includes(widget.id) ? "checked" : "";
+            const unavailable = widget.available === false;
+            const warning = unavailable
+                ? `<span class="settings-widget-warning" title="${widget.error ?? "Модуль не загрузился"}">⚠️</span>`
+                : "";
 
             container.innerHTML += `
-                <label class="settings-widget">
+                <label class="settings-widget${unavailable ? " settings-widget-unavailable" : ""}">
                     <input
                         type="checkbox"
                         data-widget-id="${widget.id}"
                         ${checked}
                     >
                     <span>${widget.icon} ${widget.title}</span>
+                    ${warning}
                     <select class="widget-span-select" data-widget-span="${widget.id}">
                         <option value="3" ${getWidgetSpan(widget.id) === 3 ? "selected" : ""}>1/4</option>
                         <option value="4" ${getWidgetSpan(widget.id) === 4 ? "selected" : ""}>1/3</option>

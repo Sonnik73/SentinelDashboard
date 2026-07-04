@@ -55,6 +55,8 @@ def api_views(request: Request):
             "id": widget["id"],
             "title": widget["title"],
             "icon": widget["icon"],
+            "available": widget["available"],
+            "error": widget["error"],
         }
         for widget in get_widgets_data()
     ]

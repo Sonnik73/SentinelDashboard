@@ -1,6 +1,7 @@
 from importlib import import_module
 
 from core.loader import get_widget_modules
+from core.module_api import get_module_status
 
 
 def get_widgets():
@@ -33,6 +34,7 @@ def get_widgets_data():
     widgets = []
 
     for module in get_widgets():
+        status = get_module_status(module.id)
         instances = get_widget_instances(module)
 
         if not instances:
@@ -45,6 +47,8 @@ def get_widgets_data():
                 "template": module.template,
                 "service": module.service,
                 "api": module.api,
+                "available": status["available"],
+                "error": status["error"],
             })
             continue
 
@@ -58,6 +62,8 @@ def get_widgets_data():
                 "template": module.template,
                 "service": module.service,
                 "api": module.api,
+                "available": status["available"],
+                "error": status["error"],
             })
 
     return widgets
