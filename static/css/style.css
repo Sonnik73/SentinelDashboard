@@ -105,16 +105,16 @@ body {
     gap: 12px;
 }
 
-.camera-item {
-    margin-bottom: 14px;
-}
-
 .camera-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
     margin-bottom: 6px;
+}
+
+.camera-header h2 {
+    margin-bottom: 0;
 }
 
 .camera-snapshot {

@@ -1,7 +1,14 @@
-<div class="card" data-widget="cameras">
-    <h2>📷 Камеры</h2>
-
-    <div id="cameras-list">
-        <p class="small">Загрузка камер...</p>
+<div class="card" data-widget="cameras:{{ instance_id }}">
+    <div class="camera-header">
+        <h2>📷 {{ widget_title }}</h2>
+        <span class="small" id="camera-status-{{ instance_id }}">—</span>
     </div>
+
+    <img
+        class="camera-snapshot"
+        id="camera-img-{{ instance_id }}"
+        alt="{{ widget_title }}"
+        onerror="this.classList.add('camera-snapshot-error')"
+        onload="this.classList.remove('camera-snapshot-error')"
+    >
 </div>

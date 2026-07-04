@@ -48,6 +48,7 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 
 ### cameras
 
+- Each configured camera is its own widget instance (`modules/cameras/service.py`'s `get_widget_instances()`, see [ARCHITECTURE.md](ARCHITECTURE.md#widget-instances)), not one shared "cameras" widget listing all of them. `config/dashboard.json`'s `cameras.hosts` entries become `cameras:cam1`, `cameras:cam2`, etc., each independently addable, resizable, and positionable in a view's layout — with two physical cameras, that's two separate cards side by side rather than one card with two rows
 - Data source: a genuine ~3 frames/second live feed from each camera's RTSP stream, not a periodic snapshot. `modules/cameras/service.py` keeps one persistent `ffmpeg` process per camera running continuously (`ffmpeg -rtsp_transport tcp -i <rtsp-url> -r 3 -f mjpeg -`), streaming concatenated JPEG frames to stdout. A one-shot `ffmpeg` process per request (the original v2.4.0 design) can't sustain 3 fps — an RTSP handshake alone can take 1-2s
 - A background thread per camera (`_read_frames`) splits the MJPEG stream into individual JPEG frames (scanning for the `\xff\xd8`/`\xff\xd9` SOI/EOI markers) and writes each one to the live file **atomically** — temp file + `Path.rename()` (atomic on POSIX) — so a concurrent HTTP reader never sees a torn/partial JPEG. A naive in-place overwrite (`-update 1`) was tested and found to corrupt ~1.5% of concurrent reads (3/200 in a stress test); the temp+rename approach had 0/200
 - The live frame lives on `/dev/shm` (tmpfs, RAM-backed) rather than the SD-card-backed `data/` directory — rewriting a file several times a second would otherwise wear the SD card over time. Falls back to `data/live` if `/dev/shm` isn't present (e.g. non-Linux dev machines)
@@ -81,6 +82,8 @@ Provided functions:
 ## Offline Caching
 
 `weather`, `rss`, and `cameras` fetch data from outside the process (external websites for the first two, local-network RTSP cameras for the third), and all follow the same pattern through `core/cache.py`: a successful response is saved to `data/<name>_cache.json`, and on failure (no network, timeout, API error) the last cached copy is served instead, marked `"source": "cache"`. `cameras` adapts this for binary data — the JSON cache only holds status metadata, the actual JPEG bytes live in a separate `data/camera_<id>.jpg` file. This is the mechanism behind the project's offline-first behavior for modules that depend on something outside their own process.
+
+`core/cache.py`'s `save_cache()` writes to a uniquely-named temp file (`tempfile.mkstemp()`) and swaps it in with an atomic rename, rather than writing the JSON file in place — with two independent camera widgets each writing status on their own request cycle, concurrent writers were common enough to actually hit this: a fixed temp filename let two threads' writes interleave into the same file, and a reader could catch it truncated mid-write. Since `json.JSONDecodeError` is a `ValueError` subclass, that corruption was silently misreported as "unknown camera" (404) instead of the real transient failure.
 
 ---
 

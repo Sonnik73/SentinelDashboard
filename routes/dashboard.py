@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from core.system import get_system_metrics
 from core.version import get_version
 from modules.views.service import load_view
-from core.loader import get_widget_modules
+from core.widgets import get_widgets_data
 
 
 router = APIRouter()
@@ -24,10 +24,16 @@ def dashboard(request: Request):
     data["view"] = view
     data["visible_widgets"] = visible_widgets
     data["layout"] = layout
+    widgets_data = get_widgets_data()
+
     data["widget_templates"] = {
-        module.id: module.template
-        for module in get_widget_modules()
-        if module.template
+        widget["id"]: widget["template"]
+        for widget in widgets_data
+        if widget["template"]
+    }
+    data["widget_titles"] = {
+        widget["id"]: widget["title"]
+        for widget in widgets_data
     }
 
     return templates.TemplateResponse(

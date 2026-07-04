@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=15">
+    <link rel="stylesheet" href="/static/css/style.css?v=16">
 </head>
 
 <body>
@@ -123,6 +123,9 @@
                 <div class="layout-cell span-{{ widget.span | default(12) }}">
                 {% set template = widget_templates.get(widget.widget) %}
                 {% if template %}
+                    {% set widget_id = widget.widget %}
+                    {% set widget_title = widget_titles.get(widget_id) %}
+                    {% set instance_id = widget_id.split(':')[1] if ':' in widget_id else None %}
                     {% include template ignore missing %}
                 {% endif %}
             </div>
@@ -138,6 +141,8 @@
     {% for widget_id, template in widget_templates.items() %}
         {% if widget_id not in visible_widgets %}
         <div class="layout-cell span-12">
+            {% set widget_title = widget_titles.get(widget_id) %}
+            {% set instance_id = widget_id.split(':')[1] if ':' in widget_id else None %}
             {% include template ignore missing %}
         </div>
         {% endif %}
@@ -146,7 +151,7 @@
 
 <script src="/static/js/api.js?v=1"></script>
 <script src="/static/js/ui.js?v=1"></script>
-<script src="/static/js/widgets.js?v=4"></script>
+<script src="/static/js/widgets.js?v=5"></script>
 <script src="/static/js/settings.js?v=2"></script>
 <script src="/static/js/app.js?v=28"></script>
 

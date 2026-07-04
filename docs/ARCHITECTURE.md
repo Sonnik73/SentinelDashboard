@@ -101,6 +101,12 @@ The `system` module is a special case: it is registered for widget display purpo
 
 See `examples/example_widget/` for a minimal module template.
 
+## Widget Instances
+
+A manifest normally produces exactly one widget, addressable by its `id` and placeable once per view. A module can instead render as **several independent, separately placeable widgets** by defining `get_widget_instances()` in its `service.py`, returning a list of `{"id": ..., "title": ...}` dicts. `core/widgets.py` expands each instance into a composite widget id, `<module_id>:<instance_id>`, with the instance's own title; everything downstream (the Settings drawer's widget checklist, drag & drop, per-widget span, the layout JSON) treats that composite id as an ordinary opaque widget id, so no other part of the system needs to know instancing exists.
+
+`cameras` is the only module using this today: each entry in `config/dashboard.json`'s `cameras.hosts` becomes its own widget (`cameras:cam1`, `cameras:cam2`, ...), so two cameras can sit side by side as independently sized/positioned cards instead of sharing one card. A module that doesn't define `get_widget_instances()` behaves exactly as before — this is opt-in, not a change to the base convention.
+
 ---
 
 # View Engine
@@ -174,7 +180,7 @@ Examples:
 - rss
 - network
 - birthdays
-- cameras *(placeholder — template only, no module/service behind it yet)*
+- cameras *(renders once per configured camera — see Widget Instances above)*
 
 Widgets are reusable and independent.
 

@@ -161,77 +161,44 @@ async function updateNetwork() {
 }
 
 
-// The camera image itself refreshes on its own fast interval (see
-// refreshCameraFrames below), independent of the ~10s manifest-driven
-// status poll - rebuilding the whole <img> on every status poll would
-// defeat that (a fresh DOM node re-decodes from scratch, causing visible
-// flicker at a fast refresh rate). updateCameras() only creates each
-// camera's DOM node once and afterwards just updates its status text.
-let cameraIds = [];
-
-function buildCameraItem(camera) {
-    const item = document.createElement("div");
-    item.className = "camera-item";
-    item.id = `camera-item-${camera.id}`;
-    item.innerHTML = `
-        <div class="camera-header">
-            <b>${camera.name}</b>
-            <span class="small" id="camera-status-${camera.id}"></span>
-        </div>
-        <img
-            class="camera-snapshot"
-            id="camera-img-${camera.id}"
-            alt="${camera.name}"
-            onerror="this.classList.add('camera-snapshot-error')"
-            onload="this.classList.remove('camera-snapshot-error')"
-        >
-    `;
-    return item;
-}
-
-function updateCameraStatus(camera) {
-    const statusEl = document.getElementById(`camera-status-${camera.id}`);
+// Each configured camera is its own widget instance (see
+// core/widgets.py's get_widget_instances()), so a view can place cam1 and
+// cam2 as separate, independently sized/positioned cards. updateCamera()
+// only touches that one camera's status text; the <img> itself refreshes
+// on its own fast interval (refreshCameraFrames below), independent of
+// the ~10s manifest-driven status poll - rebuilding the <img> node on
+// every status poll would defeat that (a fresh node re-decodes from
+// scratch, causing visible flicker at a fast refresh rate).
+async function updateCamera(instanceId) {
+    const statusEl = document.getElementById(`camera-status-${instanceId}`);
     if (!statusEl) return;
-
-    const statusIcon = camera.source === "online" ? "🟢" :
-        camera.source === "cache" ? "🟡" : "🔴";
-
-    statusEl.textContent = `${statusIcon} ${camera.last_sync ?? "нет сигнала"}`;
-}
-
-async function updateCameras() {
-    const container = document.getElementById("cameras-list");
-    if (!container) return;
 
     try {
         const data = await apiGet("/api/cameras");
+        const camera = (data.cameras || []).find(c => c.id === instanceId);
+        if (!camera) return;
 
-        if (!data.cameras || data.cameras.length === 0) {
-            container.innerHTML = `<p class="small">Камеры не настроены</p>`;
-            cameraIds = [];
-            return;
-        }
+        const statusIcon = camera.source === "online" ? "🟢" :
+            camera.source === "cache" ? "🟡" : "🔴";
 
-        cameraIds = data.cameras.map(camera => camera.id);
-
-        data.cameras.forEach(camera => {
-            if (!document.getElementById(`camera-item-${camera.id}`)) {
-                container.appendChild(buildCameraItem(camera));
-            }
-            updateCameraStatus(camera);
-        });
-
-        refreshCameraFrames();
+        statusEl.textContent = `${statusIcon} ${camera.last_sync ?? "нет сигнала"}`;
 
     } catch (error) {
-        console.error("Cameras:", error);
+        console.error("Camera:", error);
     }
 }
 
+// Scoped to the visible grid only - a camera widget not placed in the
+// current view still exists (hidden) in the widget pool for the Settings
+// checkbox list, and refreshing its image would needlessly keep its
+// ffmpeg stream alive on the backend for a card nobody sees.
 function refreshCameraFrames() {
-    cameraIds.forEach(id => {
-        const img = document.getElementById(`camera-img-${id}`);
-        if (img) img.src = `/api/cameras/${id}/snapshot?t=${Date.now()}`;
+    const grid = document.querySelector(".grid");
+    if (!grid) return;
+
+    grid.querySelectorAll(".camera-snapshot").forEach(img => {
+        const instanceId = img.id.replace(/^camera-img-/, "");
+        img.src = `/api/cameras/${instanceId}/snapshot?t=${Date.now()}`;
     });
 }
 
@@ -246,25 +213,27 @@ const WIDGET_UPDATERS = {
     rss: updateRSS,
     network: updateNetwork,
     birthdays: updateBirthdays,
-    cameras: updateCameras,
+    cameras: updateCamera,
 };
 
-Object.values(WIDGET_UPDATERS).forEach(updater => updater());
-
-// Runs independently of the manifest-driven refresh above - camera frames
-// need ~3/second, far faster than any widget's `refresh` field expresses.
-const CAMERA_FRAME_INTERVAL_MS = 333;
-setInterval(refreshCameraFrames, CAMERA_FRAME_INTERVAL_MS);
-
+// /api/widgets expands instanced widgets (currently only cameras) into
+// composite ids like "cameras:cam1" - split off the instance id and hand
+// it to the base module's updater. Ordinary widgets have no ":" and get
+// undefined, which their (parameterless) updaters simply ignore.
 async function scheduleWidgetUpdates() {
     try {
         const widgets = await apiGet("/api/widgets");
 
         widgets.forEach(widget => {
-            const updater = WIDGET_UPDATERS[widget.id];
-            if (!updater || !widget.refresh) return;
+            const [baseId, instanceId] = widget.id.split(":");
+            const updater = WIDGET_UPDATERS[baseId];
+            if (!updater) return;
 
-            setInterval(updater, widget.refresh * 1000);
+            updater(instanceId);
+
+            if (widget.refresh) {
+                setInterval(() => updater(instanceId), widget.refresh * 1000);
+            }
         });
     } catch (error) {
         console.error("Widget schedule:", error);
@@ -272,3 +241,9 @@ async function scheduleWidgetUpdates() {
 }
 
 scheduleWidgetUpdates();
+
+// Runs independently of the manifest-driven refresh above - camera frames
+// need ~3/second, far faster than any widget's `refresh` field expresses.
+const CAMERA_FRAME_INTERVAL_MS = 333;
+refreshCameraFrames();
+setInterval(refreshCameraFrames, CAMERA_FRAME_INTERVAL_MS);

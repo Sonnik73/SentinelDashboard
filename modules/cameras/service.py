@@ -43,6 +43,14 @@ class Stream:
         self.error = None
 
 
+def get_widget_instances():
+    """Each configured camera gets its own independently placeable widget
+    (see core/widgets.py) instead of one widget listing every camera -
+    the user wants two cameras side by side as separate grid cells, not
+    one shared card."""
+    return [{"id": host["id"], "title": host["name"]} for host in HOSTS]
+
+
 def find_host(camera_id):
     for host in HOSTS:
         if host["id"] == camera_id:
