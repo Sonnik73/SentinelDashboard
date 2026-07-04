@@ -4,6 +4,16 @@
 
 ---
 
+## v2.7.3
+
+### Added
+- Widget Lock: an optional `locked` flag on a layout item, toggled via a 🔓/🔒 button next to each widget in Settings. A locked widget can't be picked up by drag & drop (native `draggable` cleared) and its span/height dropdowns are disabled, so a position/size you've settled on can't be nudged by accident. Unlocking restores both immediately, no drawer reopen needed
+
+### Changed
+- Refactored the Settings widget checklist rendering into its own `renderWidgetsChecklist()`, driven by a cached `viewEditor.availableWidgets` instead of a fresh network fetch. The lock toggle (and the Reset button) need to re-render the checklist to reflect the new disabled/enabled state of the span and height dropdowns, and re-fetching from `/api/views` for that would have silently discarded any other unsaved edit in progress - found this while testing the lock toggle, before it ever shipped
+
+---
+
 ## v2.7.2
 
 ### Added
