@@ -4,6 +4,14 @@
 
 ---
 
+## v2.7.4
+
+### Added
+- Responsive Layout: below a 640px viewport, every widget now stacks full-width regardless of its chosen span - the 12-col grid otherwise left `span-3`/`span-4` widgets too narrow to read on a phone (text wrapping constantly, camera snapshots shrinking to postage-stamp size). Topbar wraps, footer stacks vertically, and the Settings drawer goes full-width instead of a fixed 320px (which could exceed the viewport on a small phone)
+- Verified with Playwright at a 375px mobile viewport (`?view=server`, which mixes span-6/span-12 widgets): cells that render ~613px wide at 1280px desktop width render full ~355px wide (viewport minus padding) at 375px, while the desktop layout is unchanged
+
+---
+
 ## v2.7.3
 
 ### Added
