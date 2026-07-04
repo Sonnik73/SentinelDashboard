@@ -286,6 +286,120 @@ function initCameraConfigActions() {
 }
 
 
+// ------------------------------
+// RSS Sources Config
+// ------------------------------
+
+async function loadRssConfig() {
+    const container = document.getElementById("rss-config-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/rss/config");
+        container.innerHTML = "";
+
+        if (!data.feeds || data.feeds.length === 0) {
+            container.innerHTML = `<p class="small">Источники не настроены</p>`;
+            return;
+        }
+
+        data.feeds.forEach(feed => {
+            const item = document.createElement("div");
+            item.className = "rss-config-item";
+            item.dataset.feedName = feed.name;
+            item.innerHTML = `
+                <input type="text" class="settings-view-select rss-config-name" value="${feed.name}" placeholder="Название">
+                <input type="text" class="settings-view-select rss-config-url" value="${feed.url}" placeholder="URL RSS-фида">
+                <div class="settings-view-manage-row">
+                    <button class="settings-action-button rss-config-save">💾 Сохранить</button>
+                    <button class="settings-action-button rss-config-delete">🗑 Удалить</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        container.querySelectorAll(".rss-config-save").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".rss-config-item");
+
+                try {
+                    await postJson("/api/rss/config/update", {
+                        name: item.dataset.feedName,
+                        new_name: item.querySelector(".rss-config-name").value,
+                        new_url: item.querySelector(".rss-config-url").value,
+                    });
+
+                    button.textContent = "✅ Сохранено";
+                    setTimeout(() => { button.textContent = "💾 Сохранить"; }, 1500);
+
+                    loadRssConfig();
+                } catch (error) {
+                    window.alert(`Не удалось сохранить источник: ${error.message}`);
+                }
+            });
+        });
+
+        container.querySelectorAll(".rss-config-delete").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".rss-config-item");
+                const feedName = item.dataset.feedName;
+
+                const confirmed = window.confirm(`Удалить источник "${feedName}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await postJson("/api/rss/config/delete", { name: feedName });
+                    loadRssConfig();
+                } catch (error) {
+                    window.alert(`Не удалось удалить источник: ${error.message}`);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("RSS config:", error);
+    }
+}
+
+function initRssConfigActions() {
+    const addButton = document.getElementById("add-rss-config");
+    const state = document.getElementById("rss-config-state");
+
+    if (!addButton || !state) return;
+
+    addButton.addEventListener("click", async () => {
+        const nameInput = document.getElementById("rss-config-name");
+        const urlInput = document.getElementById("rss-config-url");
+
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+
+        if (!name || !url) {
+            state.textContent = "⚠️ Заполните название и URL";
+            return;
+        }
+
+        addButton.disabled = true;
+        state.textContent = "⏳ Добавление...";
+
+        try {
+            await postJson("/api/rss/config/add", { name, url });
+
+            nameInput.value = "";
+            urlInput.value = "";
+
+            state.textContent = "✅ Источник добавлен";
+
+            loadRssConfig();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            addButton.disabled = false;
+        }
+    });
+}
+
+
 function initSettingsDrawer() {
     const button = document.getElementById("settings-button");
     const close = document.getElementById("settings-close");
@@ -299,6 +413,7 @@ function initSettingsDrawer() {
         overlay.classList.add("open");
         loadSettingsDrawer();
         loadCamerasConfig();
+        loadRssConfig();
         setLayoutCellsDraggable(true);
     }
 

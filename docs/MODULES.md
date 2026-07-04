@@ -28,7 +28,7 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 ### rss
 
 - Data source: RSS/Atom feeds, parsed with `feedparser`
-- Configured in `config/dashboard.json` under `rss` (`feeds`, each with `name` and `url`)
+- Configured in `config/dashboard.json` under `rss` (`feeds`, each with `name` and `url`) — feeds can also be added/edited/removed from the Settings drawer ("Источники новостей" section) instead of hand-editing the JSON: `GET /api/rss/config` lists them, `POST /api/rss/config/add` / `.../update` / `.../delete` manage them. Like `modules/cameras/service.py`'s `get_hosts()`, `get_feeds()` reads fresh from `config/dashboard.json` on every call rather than caching it at import time, so a feed added through the UI is picked up on the next refresh — no server restart. A feed has no separate `id`; it's identified by its (unique) `name`
 - Endpoint: `GET /api/rss`
 - Limits: up to 5 items per feed, 10 items total
 - Offline behavior: same cache-fallback pattern as weather, cached in `data/rss_cache.json`

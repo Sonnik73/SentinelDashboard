@@ -39,6 +39,7 @@
 - Responsive Layout: below 640px every widget stacks full-width regardless of its chosen span (a 12-col grid otherwise leaves span-3/span-4 widgets too narrow to read on a phone), and the topbar/footer/Settings drawer adapt to a narrow viewport
 - Tablet Mode: touch drag & drop for the layout editor. HTML5 native drag & drop never fires on touch devices at all, so `static/js/settings.js`'s `initDragAndDrop()` gained a parallel `touchstart`/`touchmove`/`touchend` implementation reaching the same `reorderWidget()` outcome, respecting Widget Lock exactly like the mouse version
 - Widget Framework / Plugin Architecture: a module can ship its own `widget.js` (auto-served at `/modules/<id>/widget.js`, auto-included by the dashboard page) that self-registers via `registerWidget()` instead of needing `static/js/widgets.js` edited for every new widget. `modules/cameras/widget.js` is the real example — its updater and fast image-refresh loop moved out of `widgets.js` entirely. Verified with a from-scratch module (`examples/example_widget/`, installed and removed during testing): it rendered live data with zero central-file edits
+- RSS Source Config UI (add/edit/delete news feeds from Settings instead of hand-editing `config/dashboard.json`, picked up on the next refresh with no server restart — same pattern as Camera Config UI)
 
 ---
 

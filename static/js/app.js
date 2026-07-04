@@ -9,5 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initViewManagementActions();
     initImportExportActions();
     initCameraConfigActions();
+    initRssConfigActions();
     initDragAndDrop();
 });
