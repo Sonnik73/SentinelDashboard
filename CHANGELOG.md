@@ -4,6 +4,17 @@
 
 ---
 
+## v2.6.0
+
+### Added
+- Widget instances: a module can now render as several independent, separately placeable widgets instead of exactly one, by defining `get_widget_instances()` in its `service.py`. `core/widgets.py` expands each instance into a composite id (`<module_id>:<instance_id>`) that the rest of the system — Settings drawer checklist, drag & drop, per-widget span, layout JSON — treats as an ordinary opaque widget id, so nothing downstream needed to change. Modules that don't opt in behave exactly as before
+- `cameras` uses this: each entry in `config/dashboard.json`'s `cameras.hosts` is now its own widget (`cameras:cam1`, `cameras:cam2`, ...) instead of one shared card listing every camera — with two physical cameras arriving, they can sit side by side as independently sized/positioned cards. `templates/widgets/cameras.html` and `static/js/widgets.js`'s camera updater were rewritten around a single camera per widget instance rather than a list
+
+### Fixed
+- `core/cache.py`'s `save_cache()` wrote its atomic-replace temp file under a **fixed** name, so concurrent writers collided on the same path — normally rare, but two independent camera widgets writing status on their own request cycles hit it constantly under load (verified with 240 concurrent snapshot requests: reproduced 404s every run before the fix, 0 after). A reader could catch the shared temp file mid-write, and since `json.JSONDecodeError` is a `ValueError` subclass, that corruption was silently misreported as "unknown camera" (404) instead of the real transient failure. Fixed by giving every write its own unique temp file (`tempfile.mkstemp()`) before the atomic rename — this also benefits `weather`/`rss`, which share the same cache module
+
+---
+
 ## v2.5.0
 
 ### Changed
