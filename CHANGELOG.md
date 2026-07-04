@@ -4,6 +4,18 @@
 
 ---
 
+## v2.7.7
+
+### Added
+- RSS feeds can now be added, edited, and removed from the Settings drawer instead of hand-editing `config/dashboard.json` — a new "Источники новостей" section lists configured feeds with inline-editable name/URL plus a form to add a new one. Backed by `GET /api/rss/config` and `POST /api/rss/config/add` / `.../update` / `.../delete` in `modules/rss/api.py`
+- `modules/rss/service.py`'s `get_feeds()` now reads fresh from `config/dashboard.json` on every call instead of caching it at import time (same reasoning as `modules/cameras/service.py`'s `get_hosts()` in v2.7.0), so a feed added through the UI is picked up on the next refresh with no server restart
+- A feed has no separate `id` field (unlike cameras) - it's identified by its `name`, which must be unique among configured feeds
+
+### Verification
+- Full add → rename → delete round trip verified both via direct API calls and through the actual Settings UI in a browser; `config/dashboard.json` came back byte-identical afterward
+
+---
+
 ## v2.7.6
 
 ### Added
