@@ -4,6 +4,17 @@
 
 ---
 
+## v2.7.5
+
+### Added
+- Tablet Mode: touch drag & drop for the layout editor. HTML5 native drag & drop (`dragstart`/`dragover`/`drop`) never fires on touch devices at all - `static/js/settings.js`'s `initDragAndDrop()` gained a parallel `touchstart`/`touchmove`/`touchend` implementation reaching the same `reorderWidget()` outcome. Touch events keep firing on the element where the touch started (unlike mouse `dragover`, which fires on whatever's under the pointer), so `document.elementFromPoint()` is used to find the actual cell under the finger as it moves. A locked widget (see Widget Lock, v2.7.3) resists touch-drag exactly like mouse-drag
+- New `.drag-over` outline style highlights the cell currently under a touch-drag
+
+### Verification
+- Simulated a real touch drag with synthetic `TouchEvent`s in a `has_touch` Playwright context: dragging one widget onto another reordered them exactly like the mouse path, and a locked widget stayed in place under the same gesture
+
+---
+
 ## v2.7.4
 
 ### Added
