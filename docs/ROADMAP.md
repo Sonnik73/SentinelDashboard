@@ -35,6 +35,7 @@
 - Widget Resize — already satisfied by the span dropdown in the Settings widget checklist; no separate drag-resize handle was needed
 - Module Load-Failure Visibility: `ModuleInfo`'s API import result is now tracked (`core/module_api.py`'s `MODULE_STATUS`) and surfaced as `available`/`error` on every widget from `/api/widgets` and `/api/views`. Settings shows a broken widget struck through with a ⚠️ tooltip carrying the error, instead of listing it as a normal widget that silently never loads data
 - Widget Height: an optional `height` (px) on a layout item, editable via a dropdown next to the span selector in Settings; absent/0 means "auto" (grows to content, the pre-existing default) so every existing view is unaffected until a height is explicitly picked
+- Widget Lock: an optional `locked` flag on a layout item, toggled via a 🔓/🔒 button in Settings. A locked widget can't be picked up by drag & drop and its span/height dropdowns are disabled, so a position/size you've settled on can't be nudged by accident
 
 ---
 
@@ -50,7 +51,6 @@
 
 - Responsive Layout
 - Tablet Mode
-- Widget Lock
 
 ## Platform
 

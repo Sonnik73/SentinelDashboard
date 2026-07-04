@@ -47,77 +47,111 @@ async function loadSettingsDrawer() {
             };
         }
 
-        const container = document.getElementById("settings-widgets");
-        container.innerHTML = "";
-
-        data.available_widgets.forEach(widget => {
-            const checked = data.widgets.includes(widget.id) ? "checked" : "";
-            const unavailable = widget.available === false;
-            const warning = unavailable
-                ? `<span class="settings-widget-warning" title="${widget.error ?? "Модуль не загрузился"}">⚠️</span>`
-                : "";
-
-            container.innerHTML += `
-                <label class="settings-widget${unavailable ? " settings-widget-unavailable" : ""}">
-                    <input
-                        type="checkbox"
-                        data-widget-id="${widget.id}"
-                        ${checked}
-                    >
-                    <span>${widget.icon} ${widget.title}</span>
-                    ${warning}
-                    <select class="widget-span-select" data-widget-span="${widget.id}">
-                        <option value="3" ${getWidgetSpan(widget.id) === 3 ? "selected" : ""}>1/4</option>
-                        <option value="4" ${getWidgetSpan(widget.id) === 4 ? "selected" : ""}>1/3</option>
-                        <option value="6" ${getWidgetSpan(widget.id) === 6 ? "selected" : ""}>1/2</option>
-                        <option value="12" ${getWidgetSpan(widget.id) === 12 ? "selected" : ""}>Вся ширина</option>
-                    </select>
-                    <select class="widget-height-select" data-widget-height="${widget.id}">
-                        <option value="0" ${getWidgetHeight(widget.id) === 0 ? "selected" : ""}>Авто</option>
-                        <option value="220" ${getWidgetHeight(widget.id) === 220 ? "selected" : ""}>Компактно</option>
-                        <option value="360" ${getWidgetHeight(widget.id) === 360 ? "selected" : ""}>Средне</option>
-                        <option value="600" ${getWidgetHeight(widget.id) === 600 ? "selected" : ""}>Высоко</option>
-                    </select>
-                </label>
-            `;
-        });
-        container.querySelectorAll("input[type='checkbox']").forEach(input => {
-            input.addEventListener("change", () => {
-                viewEditor.currentLayout = buildLayoutFromSettings(container);
-                updateEditorState();
-                applyView();
-            });
-        });
-
-        container.querySelectorAll(".widget-span-select").forEach(select => {
-            select.addEventListener("change", () => {
-                setWidgetSpan(
-                    select.dataset.widgetSpan,
-                    Number(select.value)
-                );
-
-                viewEditor.currentLayout = buildLayoutFromSettings(container);
-                updateEditorState();
-                applyView();
-            });
-        });
-
-        container.querySelectorAll(".widget-height-select").forEach(select => {
-            select.addEventListener("change", () => {
-                setWidgetHeight(
-                    select.dataset.widgetHeight,
-                    Number(select.value)
-                );
-
-                viewEditor.currentLayout = buildLayoutFromSettings(container);
-                updateEditorState();
-                applyView();
-            });
-        });
+        viewEditor.availableWidgets = data.available_widgets;
+        renderWidgetsChecklist();
 
     } catch (error) {
         console.error("Settings:", error);
     }
+}
+
+// Rebuilds the widget checklist from viewEditor.availableWidgets (cached
+// from the last loadSettingsDrawer() fetch) and current viewEditor state,
+// with no network round-trip - so toggling a lock or a span can re-render
+// the checklist to reflect the change without wiping out any other
+// unsaved edit the way re-fetching from the server would.
+function renderWidgetsChecklist() {
+    const container = document.getElementById("settings-widgets");
+    if (!container) return;
+
+    const currentWidgets = getCurrentWidgets();
+    container.innerHTML = "";
+
+    viewEditor.availableWidgets.forEach(widget => {
+        const checked = currentWidgets.includes(widget.id) ? "checked" : "";
+        const unavailable = widget.available === false;
+        const warning = unavailable
+            ? `<span class="settings-widget-warning" title="${widget.error ?? "Модуль не загрузился"}">⚠️</span>`
+            : "";
+        const locked = getWidgetLocked(widget.id);
+        const disabled = locked ? "disabled" : "";
+
+        container.innerHTML += `
+            <label class="settings-widget${unavailable ? " settings-widget-unavailable" : ""}">
+                <input
+                    type="checkbox"
+                    data-widget-id="${widget.id}"
+                    ${checked}
+                >
+                <span>${widget.icon} ${widget.title}</span>
+                ${warning}
+                <select class="widget-span-select" data-widget-span="${widget.id}" ${disabled}>
+                    <option value="3" ${getWidgetSpan(widget.id) === 3 ? "selected" : ""}>1/4</option>
+                    <option value="4" ${getWidgetSpan(widget.id) === 4 ? "selected" : ""}>1/3</option>
+                    <option value="6" ${getWidgetSpan(widget.id) === 6 ? "selected" : ""}>1/2</option>
+                    <option value="12" ${getWidgetSpan(widget.id) === 12 ? "selected" : ""}>Вся ширина</option>
+                </select>
+                <select class="widget-height-select" data-widget-height="${widget.id}" ${disabled}>
+                    <option value="0" ${getWidgetHeight(widget.id) === 0 ? "selected" : ""}>Авто</option>
+                    <option value="220" ${getWidgetHeight(widget.id) === 220 ? "selected" : ""}>Компактно</option>
+                    <option value="360" ${getWidgetHeight(widget.id) === 360 ? "selected" : ""}>Средне</option>
+                    <option value="600" ${getWidgetHeight(widget.id) === 600 ? "selected" : ""}>Высоко</option>
+                </select>
+                <button
+                    type="button"
+                    class="widget-lock-toggle"
+                    data-widget-lock="${widget.id}"
+                    title="${locked ? "Разблокировать (можно перетаскивать и менять размер)" : "Заблокировать (нельзя перетащить или изменить размер)"}"
+                >${locked ? "🔒" : "🔓"}</button>
+            </label>
+        `;
+    });
+
+    container.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.addEventListener("change", () => {
+            viewEditor.currentLayout = buildLayoutFromSettings(container);
+            updateEditorState();
+            applyView();
+        });
+    });
+
+    container.querySelectorAll(".widget-lock-toggle").forEach(button => {
+        button.addEventListener("click", () => {
+            const widgetId = button.dataset.widgetLock;
+            setWidgetLocked(widgetId, !getWidgetLocked(widgetId));
+
+            viewEditor.currentLayout = buildLayoutFromSettings(container);
+            updateEditorState();
+            applyView();
+            renderWidgetsChecklist();
+        });
+    });
+
+    container.querySelectorAll(".widget-span-select").forEach(select => {
+        select.addEventListener("change", () => {
+            setWidgetSpan(
+                select.dataset.widgetSpan,
+                Number(select.value)
+            );
+
+            viewEditor.currentLayout = buildLayoutFromSettings(container);
+            updateEditorState();
+            applyView();
+        });
+    });
+
+    container.querySelectorAll(".widget-height-select").forEach(select => {
+        select.addEventListener("change", () => {
+            setWidgetHeight(
+                select.dataset.widgetHeight,
+                Number(select.value)
+            );
+
+            viewEditor.currentLayout = buildLayoutFromSettings(container);
+            updateEditorState();
+            applyView();
+        });
+    });
 }
 
 
@@ -477,6 +511,7 @@ const viewEditor = {
     currentView: "",
     currentIsDefault: false,
     widgetOrder: [],
+    availableWidgets: [],
 };
 
 function getCurrentWidgets() {
@@ -543,6 +578,25 @@ function setWidgetHeight(widgetId, height) {
     }
 }
 
+// A locked widget can't be picked up by drag & drop, and its span/height
+// no longer change from the checklist - meant for a widget whose position
+// and size you've settled on and don't want to nudge by accident.
+function getWidgetLocked(widgetId) {
+    const item = findLayoutItem(widgetId);
+    return Boolean(item && item.locked);
+}
+
+function setWidgetLocked(widgetId, locked) {
+    const item = findLayoutItem(widgetId);
+    if (item) {
+        if (locked) {
+            item.locked = true;
+        } else {
+            delete item.locked;
+        }
+    }
+}
+
 function buildLayoutFromSettings(container) {
     const checkedIds = new Set(
         Array.from(container.querySelectorAll("input[type='checkbox']:checked"))
@@ -580,6 +634,9 @@ function buildLayoutFromSettings(container) {
         const item = { widget: widgetId, span: span };
         if (height) {
             item.height = height;
+        }
+        if (getWidgetLocked(widgetId)) {
+            item.locked = true;
         }
         currentRow.push(item);
 
@@ -641,6 +698,19 @@ function applyView() {
                 cell.style.height = "";
             }
 
+            // applyView() only ever runs while the Settings drawer (and
+            // therefore drag & drop) is open, so it's safe to set
+            // draggable unconditionally here rather than only clearing it
+            // for locked widgets - otherwise unlocking one wouldn't make
+            // it draggable again until the drawer was closed and reopened.
+            if (item.locked) {
+                cell.dataset.locked = "true";
+            } else {
+                delete cell.dataset.locked;
+            }
+            cell.draggable = !item.locked;
+            cell.classList.toggle("draggable", !item.locked);
+
             const card = cell.querySelector("[data-widget]");
             if (card) {
                 card.classList.remove("hidden-widget");
@@ -659,8 +729,9 @@ function applyView() {
 
 function setLayoutCellsDraggable(enabled) {
     document.querySelectorAll(".layout-cell").forEach(cell => {
-        cell.draggable = enabled;
-        cell.classList.toggle("draggable", enabled);
+        const draggable = enabled && cell.dataset.locked !== "true";
+        cell.draggable = draggable;
+        cell.classList.toggle("draggable", draggable);
     });
 }
 
@@ -762,10 +833,7 @@ function initViewEditorActions() {
             viewEditor.currentLayout = JSON.parse(JSON.stringify(viewEditor.originalLayout));
             viewEditor.widgetOrder = getOriginalWidgets();
 
-            document.querySelectorAll("#settings-widgets input").forEach(input => {
-                input.checked = getOriginalWidgets().includes(input.dataset.widgetId);
-            });
-
+            renderWidgetsChecklist();
             updateEditorState();
             applyView();
         });
