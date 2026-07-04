@@ -4,6 +4,21 @@
 
 ---
 
+## v2.5.0
+
+### Changed
+- Cameras widget rearchitected from a one-shot ffmpeg snapshot per HTTP request to a genuine ~3 frames/second live feed. An RTSP handshake alone can take 1-2s, so spawning ffmpeg per request couldn't keep up with 3 fps — `modules/cameras/service.py` now keeps one persistent `ffmpeg` process per camera running continuously (`-r 3 -f mjpeg -`, streamed to stdout), with a background thread splitting the stream into individual JPEG frames
+- Frames are written atomically (temp file + `Path.rename()`, which is atomic on POSIX) to avoid a torn/partial JPEG being served mid-write — confirmed with a 200-iteration concurrent-read stress test: the previous naive in-place overwrite approach corrupted 3/200 reads, the temp+rename approach had 0/200
+- The live frame lives on `/dev/shm` (tmpfs, RAM-backed) rather than the SD-card-backed `data/` directory, since it's rewritten several times a second — writing that continuously to the SD card would cause meaningful wear over time on a Raspberry Pi. The SD-card-backed fallback snapshot (`data/camera_<id>.jpg`) and status metadata (`data/cameras_cache.json`) are still updated, just throttled to once every 2 seconds
+- `get_camera_snapshot()` renamed to `get_camera_frame()`: once a camera's stream is running, it just reads the live tmpfs file — no ffmpeg spawned per call. `ensure_stream()` lazily starts a camera's stream on first request and restarts it if the process has died or gone stale (no new frame for 5s)
+- `app.py` gets a shutdown hook (`stop_all_streams()`) so the persistent ffmpeg processes are terminated cleanly when the server stops, rather than left as orphans
+- `static/js/widgets.js`'s `updateCameras()` now only creates each camera's DOM node once and afterwards updates its status text in place; the `<img>` itself refreshes on its own independent ~333ms interval (`refreshCameraFrames()`) so the manifest's 10s status-poll interval no longer governs image freshness. Rebuilding the whole `<img>` node on every poll would have caused visible flicker at 3 fps
+
+### Known limitation
+- Still unverified against real camera hardware — validated end-to-end with a synthetic `ffmpeg` test source (frame integrity, restart-on-death) and against unreachable/fake IPs (clean 502/404 degradation, no orphaned processes), but the actual Tiandy TC-C320N RTSP path/credentials remain to be confirmed once the cameras are on the network
+
+---
+
 ## v2.4.0
 
 ### Added
