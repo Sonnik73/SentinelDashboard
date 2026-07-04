@@ -5,11 +5,17 @@ import time
 from pathlib import Path
 
 from core.cache import CACHE_DIR, load_cache, save_cache
-from core.config import get_section
+from core.config import get_section, update_section
 from core.time import now_string
 
-CAMERAS_CONFIG = get_section("cameras")
-HOSTS = CAMERAS_CONFIG.get("hosts", [])
+# Read fresh from config/dashboard.json on every call rather than caching
+# at import time, so a camera added/edited/removed through Settings takes
+# effect immediately - no server restart needed, unlike a manual edit of
+# the JSON file (every other module still reads its config once at import,
+# since none of them expose an in-app way to change it).
+def get_hosts():
+    return get_section("cameras").get("hosts", [])
+
 
 # Genuine 3 fps rules out spawning ffmpeg per request (an RTSP handshake
 # alone can take 1-2s). Instead one ffmpeg process per camera runs
@@ -48,15 +54,95 @@ def get_widget_instances():
     (see core/widgets.py) instead of one widget listing every camera -
     the user wants two cameras side by side as separate grid cells, not
     one shared card."""
-    return [{"id": host["id"], "title": host["name"]} for host in HOSTS]
+    return [{"id": host["id"], "title": host["name"]} for host in get_hosts()]
 
 
 def find_host(camera_id):
-    for host in HOSTS:
+    for host in get_hosts():
         if host["id"] == camera_id:
             return host
 
     raise ValueError(f"Unknown camera: {camera_id}")
+
+
+def validate_camera_id(camera_id: str) -> str:
+    camera_id = (camera_id or "").strip().lower()
+
+    if not camera_id or not camera_id.replace("-", "").replace("_", "").isalnum():
+        raise ValueError("Camera id may contain only letters, numbers, hyphens and underscores")
+
+    return camera_id
+
+
+def _save_hosts(hosts: list):
+    update_section("cameras", {"hosts": hosts})
+
+
+def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = "/1/1"):
+    camera_id = validate_camera_id(camera_id)
+    name = (name or "").strip()
+    ip = (ip or "").strip()
+
+    if not name:
+        raise ValueError("Name is required")
+
+    if not ip:
+        raise ValueError("IP is required")
+
+    hosts = get_hosts()
+
+    if any(host["id"] == camera_id for host in hosts):
+        raise ValueError(f"Camera already exists: {camera_id}")
+
+    host = {
+        "id": camera_id,
+        "name": name,
+        "ip": ip,
+        "port": int(port) if port else 554,
+        "path": (path or "/1/1").strip() or "/1/1",
+    }
+
+    hosts.append(host)
+    _save_hosts(hosts)
+
+    return host
+
+
+def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, path: str = None):
+    hosts = get_hosts()
+
+    for host in hosts:
+        if host["id"] != camera_id:
+            continue
+
+        if name and name.strip():
+            host["name"] = name.strip()
+        if ip and ip.strip():
+            host["ip"] = ip.strip()
+        if port:
+            host["port"] = int(port)
+        if path and path.strip():
+            host["path"] = path.strip()
+
+        _save_hosts(hosts)
+        return host
+
+    raise ValueError(f"Unknown camera: {camera_id}")
+
+
+def delete_camera(camera_id: str):
+    hosts = get_hosts()
+    remaining = [host for host in hosts if host["id"] != camera_id]
+
+    if len(remaining) == len(hosts):
+        raise ValueError(f"Unknown camera: {camera_id}")
+
+    with _streams_lock:
+        stream = _streams.pop(camera_id, None)
+        if stream is not None:
+            _stop_stream(stream)
+
+    _save_hosts(remaining)
 
 
 def build_rtsp_url(host):
@@ -237,7 +323,7 @@ def get_cameras_status():
     statuses = load_cache("cameras") or {}
     cameras = []
 
-    for host in HOSTS:
+    for host in get_hosts():
         status = statuses.get(host["id"], {})
         cameras.append({
             "id": host["id"],

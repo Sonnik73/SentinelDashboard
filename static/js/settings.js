@@ -96,6 +96,138 @@ async function loadSettingsDrawer() {
     }
 }
 
+
+// ------------------------------
+// Cameras Config
+// ------------------------------
+
+async function loadCamerasConfig() {
+    const container = document.getElementById("cameras-config-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/cameras/config");
+        container.innerHTML = "";
+
+        if (!data.cameras || data.cameras.length === 0) {
+            container.innerHTML = `<p class="small">Камеры не настроены</p>`;
+            return;
+        }
+
+        data.cameras.forEach(camera => {
+            const item = document.createElement("div");
+            item.className = "camera-config-item";
+            item.dataset.cameraId = camera.id;
+            item.innerHTML = `
+                <input type="text" class="settings-view-select camera-config-name" value="${camera.name}" placeholder="Название">
+                <input type="text" class="settings-view-select camera-config-ip" value="${camera.ip}" placeholder="IP-адрес">
+                <input type="text" class="settings-view-select camera-config-port" value="${camera.port ?? 554}" placeholder="Порт">
+                <input type="text" class="settings-view-select camera-config-path" value="${camera.path ?? "/1/1"}" placeholder="Путь">
+                <div class="settings-view-manage-row">
+                    <button class="settings-action-button camera-config-save">💾 Сохранить</button>
+                    <button class="settings-action-button camera-config-delete">🗑 Удалить</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        container.querySelectorAll(".camera-config-save").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".camera-config-item");
+
+                try {
+                    await postJson("/api/cameras/config/update", {
+                        id: item.dataset.cameraId,
+                        name: item.querySelector(".camera-config-name").value,
+                        ip: item.querySelector(".camera-config-ip").value,
+                        port: item.querySelector(".camera-config-port").value,
+                        path: item.querySelector(".camera-config-path").value,
+                    });
+
+                    button.textContent = "✅ Сохранено";
+                    setTimeout(() => { button.textContent = "💾 Сохранить"; }, 1500);
+
+                    loadSettingsDrawer();
+                } catch (error) {
+                    window.alert(`Не удалось сохранить камеру: ${error.message}`);
+                }
+            });
+        });
+
+        container.querySelectorAll(".camera-config-delete").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".camera-config-item");
+                const cameraId = item.dataset.cameraId;
+
+                const confirmed = window.confirm(`Удалить камеру "${cameraId}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await postJson("/api/cameras/config/delete", { id: cameraId });
+                    loadCamerasConfig();
+                    loadSettingsDrawer();
+                } catch (error) {
+                    window.alert(`Не удалось удалить камеру: ${error.message}`);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Cameras config:", error);
+    }
+}
+
+function initCameraConfigActions() {
+    const addButton = document.getElementById("add-camera-config");
+    const state = document.getElementById("camera-config-state");
+
+    if (!addButton || !state) return;
+
+    addButton.addEventListener("click", async () => {
+        const idInput = document.getElementById("camera-config-id");
+        const nameInput = document.getElementById("camera-config-name");
+        const ipInput = document.getElementById("camera-config-ip");
+        const portInput = document.getElementById("camera-config-port");
+        const pathInput = document.getElementById("camera-config-path");
+
+        const id = idInput.value.trim();
+        const name = nameInput.value.trim();
+        const ip = ipInput.value.trim();
+
+        if (!id || !name || !ip) {
+            state.textContent = "⚠️ Заполните id, название и IP";
+            return;
+        }
+
+        addButton.disabled = true;
+        state.textContent = "⏳ Добавление...";
+
+        try {
+            await postJson("/api/cameras/config/add", {
+                id,
+                name,
+                ip,
+                port: portInput.value.trim(),
+                path: pathInput.value.trim(),
+            });
+
+            [idInput, nameInput, ipInput, portInput, pathInput].forEach(input => {
+                input.value = "";
+            });
+
+            state.textContent = "✅ Камера добавлена";
+
+            loadCamerasConfig();
+            loadSettingsDrawer();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            addButton.disabled = false;
+        }
+    });
+}
+
+
 function initSettingsDrawer() {
     const button = document.getElementById("settings-button");
     const close = document.getElementById("settings-close");
@@ -108,6 +240,7 @@ function initSettingsDrawer() {
         drawer.classList.add("open");
         overlay.classList.add("open");
         loadSettingsDrawer();
+        loadCamerasConfig();
         setLayoutCellsDraggable(true);
     }
 

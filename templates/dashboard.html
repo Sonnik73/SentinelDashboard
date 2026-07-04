@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=16">
+    <link rel="stylesheet" href="/static/css/style.css?v=17">
 </head>
 
 <body>
@@ -89,6 +89,28 @@
         </div>
     </div>
 
+    <div class="settings-section">
+        <p class="small">Камеры</p>
+
+        <div id="cameras-config-list">
+            <p class="small">Загрузка...</p>
+        </div>
+
+        <div class="camera-config-form">
+            <input type="text" id="camera-config-id" class="settings-view-select" placeholder="id (например cam3)">
+            <input type="text" id="camera-config-name" class="settings-view-select" placeholder="Название">
+            <input type="text" id="camera-config-ip" class="settings-view-select" placeholder="IP-адрес">
+            <input type="text" id="camera-config-port" class="settings-view-select" placeholder="Порт (по умолчанию 554)">
+            <input type="text" id="camera-config-path" class="settings-view-select" placeholder="Путь (по умолчанию /1/1)">
+
+            <button id="add-camera-config" class="settings-action-button">
+                ➕ Добавить камеру
+            </button>
+        </div>
+
+        <p id="camera-config-state" class="small"></p>
+    </div>
+
     <div class="settings-section settings-actions">
         <button id="generate-view-link" class="settings-action-button">
             🔗 Поделиться представлением
@@ -152,8 +174,8 @@
 <script src="/static/js/api.js?v=1"></script>
 <script src="/static/js/ui.js?v=1"></script>
 <script src="/static/js/widgets.js?v=5"></script>
-<script src="/static/js/settings.js?v=2"></script>
-<script src="/static/js/app.js?v=28"></script>
+<script src="/static/js/settings.js?v=3"></script>
+<script src="/static/js/app.js?v=29"></script>
 
 <footer class="footer">
     <div>
