@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from modules.cameras.service import get_camera_snapshot, get_cameras_status
+from modules.cameras.service import get_camera_frame, get_cameras_status
 
 
 router = APIRouter()
@@ -14,7 +14,7 @@ def api_cameras():
 @router.get("/cameras/{camera_id}/snapshot")
 def api_camera_snapshot(camera_id: str):
     try:
-        image_bytes, source = get_camera_snapshot(camera_id)
+        image_bytes, source = get_camera_frame(camera_id)
     except ValueError as error:
         raise HTTPException(status_code=404, detail=str(error))
     except Exception as error:

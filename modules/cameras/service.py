@@ -1,5 +1,8 @@
 import os
 import subprocess
+import threading
+import time
+from pathlib import Path
 
 from core.cache import CACHE_DIR, load_cache, save_cache
 from core.config import get_section
@@ -8,10 +11,36 @@ from core.time import now_string
 CAMERAS_CONFIG = get_section("cameras")
 HOSTS = CAMERAS_CONFIG.get("hosts", [])
 
-# A single-frame RTSP grab, not a live stream - ffmpeg connects, waits for
-# a keyframe, and exits. 8s covers a slow RTSP handshake on a real camera;
-# the internal -timeout below lets ffmpeg fail on its own before that.
-FFMPEG_TIMEOUT = 8
+# Genuine 3 fps rules out spawning ffmpeg per request (an RTSP handshake
+# alone can take 1-2s). Instead one ffmpeg process per camera runs
+# continuously, streaming MJPEG to stdout; a background thread splits it
+# into frames and writes each one atomically (temp file + rename) so a
+# concurrent HTTP reader never sees a torn/partial JPEG.
+FRAME_RATE = 3
+STARTUP_TIMEOUT = 8          # max wait for a fresh stream's first frame
+STALE_AFTER = 5              # seconds without a new frame before restarting
+STATUS_WRITE_INTERVAL = 2    # throttle status + last-known-good writes
+
+# The live frame is rewritten several times a second - keep it on tmpfs
+# (RAM-backed) rather than wearing out the SD card. Falls back to the
+# normal cache dir if /dev/shm isn't available (e.g. non-Linux dev boxes).
+LIVE_DIR = Path("/dev/shm/sentinel_cameras") if Path("/dev/shm").is_dir() else CACHE_DIR / "live"
+
+JPEG_SOI = b"\xff\xd8"
+JPEG_EOI = b"\xff\xd9"
+
+_streams = {}
+_streams_lock = threading.Lock()
+
+
+class Stream:
+    def __init__(self, camera_id):
+        self.camera_id = camera_id
+        self.process = None
+        self.thread = None
+        self.last_frame_at = 0
+        self.last_status_write = 0
+        self.error = None
 
 
 def find_host(camera_id):
@@ -31,66 +60,169 @@ def build_rtsp_url(host):
     return f"rtsp://{username}:{password}@{host['ip']}:{port}{path}"
 
 
+def get_live_file(camera_id):
+    return LIVE_DIR / f"camera_{camera_id}.jpg"
+
+
 def get_snapshot_file(camera_id):
+    """Last-known-good JPEG. Lives on the normal (SD-card) cache dir so it
+    survives a restart, unlike the live tmpfs frame."""
     return CACHE_DIR / f"camera_{camera_id}.jpg"
 
 
-def capture_snapshot(host):
-    result = subprocess.run(
+def _write_status(camera_id, source, error=None):
+    statuses = load_cache("cameras") or {}
+    statuses[camera_id] = {
+        "source": source,
+        "last_sync": now_string(),
+        "error": error,
+    }
+    save_cache("cameras", statuses)
+
+
+def _read_frames(stream):
+    """Background thread for the lifetime of one camera's ffmpeg process:
+    splits its stdout into complete JPEG frames. Every frame is written to
+    the tmpfs live file (cheap, RAM-backed); the SD-card-backed fallback
+    snapshot and status metadata are only touched once per
+    STATUS_WRITE_INTERVAL to avoid wearing the SD card at 3 fps."""
+    live_file = get_live_file(stream.camera_id)
+    tmp_file = live_file.with_suffix(".tmp.jpg")
+    snapshot_file = get_snapshot_file(stream.camera_id)
+    buffer = b""
+
+    try:
+        while True:
+            chunk = stream.process.stdout.read(4096)
+            if not chunk:
+                break
+
+            buffer += chunk
+
+            while True:
+                start = buffer.find(JPEG_SOI)
+                if start == -1:
+                    buffer = b""
+                    break
+
+                end = buffer.find(JPEG_EOI, start + 2)
+                if end == -1:
+                    buffer = buffer[start:]
+                    break
+
+                frame = buffer[start:end + 2]
+                buffer = buffer[end + 2:]
+
+                tmp_file.write_bytes(frame)
+                tmp_file.rename(live_file)
+                stream.last_frame_at = time.monotonic()
+
+                now = time.monotonic()
+                if now - stream.last_status_write >= STATUS_WRITE_INTERVAL:
+                    stream.last_status_write = now
+                    snapshot_file.write_bytes(frame)
+                    _write_status(stream.camera_id, "online")
+
+    except Exception as error:
+        stream.error = str(error)
+
+
+def _start_stream(camera_id):
+    host = find_host(camera_id)
+    stream = Stream(camera_id)
+
+    LIVE_DIR.mkdir(parents=True, exist_ok=True)
+
+    stream.process = subprocess.Popen(
         [
             "ffmpeg", "-y",
             "-rtsp_transport", "tcp",
             "-timeout", "5000000",
             "-i", build_rtsp_url(host),
-            "-frames:v", "1",
+            "-r", str(FRAME_RATE),
             "-q:v", "5",
-            "-f", "image2",
+            "-f", "mjpeg",
             "-",
         ],
-        capture_output=True,
-        timeout=FFMPEG_TIMEOUT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
     )
 
-    if result.returncode != 0 or not result.stdout:
-        stderr_lines = result.stderr.decode(errors="replace").strip().splitlines()
-        raise RuntimeError(stderr_lines[-1] if stderr_lines else "ffmpeg produced no output")
+    stream.thread = threading.Thread(target=_read_frames, args=(stream,), daemon=True)
+    stream.thread.start()
 
-    return result.stdout
+    return stream
 
 
-def get_camera_snapshot(camera_id):
-    """Returns (image_bytes, source). Captures a fresh frame on success,
-    or falls back to the last cached JPEG on failure, same offline
-    pattern as weather/rss (see core/cache.py)."""
-    host = find_host(camera_id)
+def _stop_stream(stream):
+    if stream.process and stream.process.poll() is None:
+        stream.process.terminate()
+        try:
+            stream.process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            stream.process.kill()
+
+
+def ensure_stream(camera_id):
+    """Lazily starts a camera's stream on first use, and restarts it if the
+    ffmpeg process has died or stopped producing frames."""
+    with _streams_lock:
+        stream = _streams.get(camera_id)
+
+        is_dead = stream is not None and stream.process.poll() is not None
+        is_stale = (
+            stream is not None
+            and stream.last_frame_at
+            and time.monotonic() - stream.last_frame_at > STALE_AFTER
+        )
+
+        if stream is None or is_dead or is_stale:
+            if stream is not None:
+                _stop_stream(stream)
+            stream = _start_stream(camera_id)
+            _streams[camera_id] = stream
+
+        return stream
+
+
+def stop_all_streams():
+    """Called on app shutdown so ffmpeg processes don't outlive the server."""
+    with _streams_lock:
+        for stream in _streams.values():
+            _stop_stream(stream)
+        _streams.clear()
+
+
+def get_camera_frame(camera_id):
+    """Returns (image_bytes, source). Ensures the camera's stream is
+    running and, once it has produced at least one frame, just reads the
+    live tmpfs file - no ffmpeg spawned per call, which is what makes 3 fps
+    viable. Falls back to the last cached JPEG if the stream never
+    produces a frame (same offline pattern as weather/rss)."""
+    find_host(camera_id)  # raises ValueError for unknown cameras
+    stream = ensure_stream(camera_id)
+    live_file = get_live_file(camera_id)
+
+    deadline = time.monotonic() + STARTUP_TIMEOUT
+    while time.monotonic() < deadline:
+        if live_file.exists():
+            try:
+                return live_file.read_bytes(), "online"
+            except OSError:
+                pass
+        if stream.process.poll() is not None:
+            break
+        time.sleep(0.05)
+
+    error = stream.error or "camera stream did not produce a frame"
     snapshot_file = get_snapshot_file(camera_id)
-    statuses = load_cache("cameras") or {}
 
-    try:
-        image_bytes = capture_snapshot(host)
+    if snapshot_file.exists():
+        _write_status(camera_id, "cache", error)
+        return snapshot_file.read_bytes(), "cache"
 
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        snapshot_file.write_bytes(image_bytes)
-
-        statuses[camera_id] = {"source": "online", "last_sync": now_string()}
-        save_cache("cameras", statuses)
-
-        return image_bytes, "online"
-
-    except Exception as error:
-        previous = statuses.get(camera_id, {})
-
-        statuses[camera_id] = {
-            "source": "cache" if snapshot_file.exists() else "error",
-            "last_sync": previous.get("last_sync"),
-            "error": str(error),
-        }
-        save_cache("cameras", statuses)
-
-        if snapshot_file.exists():
-            return snapshot_file.read_bytes(), "cache"
-
-        raise
+    _write_status(camera_id, "error", error)
+    raise RuntimeError(error)
 
 
 def get_cameras_status():
