@@ -94,12 +94,21 @@ Each manifest declares an `id`, `title`, `icon`, `type`, and optional `refresh` 
 | Template | `templates/widgets/<id>.html` |
 | Service | `service.py`, if present in the module folder |
 | API | `api.py`, if present in the module folder |
+| Script | `widget.js`, if present in the module folder |
 
 If a module folder contains an `api.py` exposing a `router = APIRouter()`, `core/module_api.py` imports it automatically and mounts it under `/api`. No manual wiring is required to add a new module — drop a folder with a `manifest.json` into `modules/` and it is picked up on the next restart.
+
+If a module folder contains a `widget.js`, `routes/dashboard.py` serves it at `/modules/<id>/widget.js` and `templates/dashboard.html` includes it automatically — see **Plugin Architecture** below for what that file is expected to do.
 
 The `system` module is a special case: it is registered for widget display purposes via its manifest, but its data comes from `core/system.py` through a dedicated core route (`/api/system`) rather than a per-module `service.py`/`api.py` pair.
 
 See `examples/example_widget/` for a minimal module template.
+
+## Plugin Architecture
+
+Adding live data to a widget used to mean editing `static/js/widgets.js` for every new module: writing an `update*()` function and adding it to a central `WIDGET_UPDATERS` map by hand. A module can instead ship its own `widget.js` (auto-served and auto-included, see the table above) that calls `registerWidget(id, updaterFunction)` — defined in `static/js/registry.js`, loaded before everything else so both `widgets.js`'s built-in updaters and any module's own script can call it regardless of load order between them. `static/js/widgets.js`'s scheduler (`scheduleWidgetUpdates()`) doesn't care where an entry in `WIDGET_UPDATERS` came from; it already looks the id up generically and calls it on the manifest's `refresh` interval.
+
+`modules/cameras/widget.js` is the real, working example: its updater and the independent ~333ms fast image-refresh loop used to live in `static/js/widgets.js`, moved out entirely once this landed. A module that doesn't ship a `widget.js` needs nothing extra — this is opt-in, the same convention-over-configuration shape as `service.py`/`api.py`.
 
 ## Widget Instances
 

@@ -19,13 +19,13 @@ Optional files:
 
 - `service.py`
 - `api.py`
+- `widget.js` (see below — this one, unlike the others, stays in the module folder)
 - static assets
 
 ## Loading live data into the widget
 
-Unlike the backend (which auto-discovers modules), the frontend is **not** automatic. To make the widget display live data:
+This folder's `widget.js` already does it — copy it alongside the other files (`modules/example/widget.js`, no relocation needed, unlike `example.html`) and it's auto-served at `/modules/example/widget.js` and auto-included by the dashboard page. It fetches `/api/example` and writes into `#example-content`, then calls `registerWidget("example", updateExample)` to plug into the update scheduler — see [Plugin Architecture](../../docs/ARCHITECTURE.md#plugin-architecture) for how that scheduler picks it up, and `modules/cameras/widget.js` for a more involved real example.
 
-1. Add an `update` function to `static/js/widgets.js` that fetches `/api/example` and writes into `#example-content` (see `updateBirthdays()` in that file for a minimal pattern; guard it with an early return if its root element is missing, same as the other updaters)
-2. Register it in the `WIDGET_UPDATERS` map (`id → function`) near the bottom of `static/js/widgets.js`
+(The older way still works too: add the same kind of function directly to `static/js/widgets.js` and call `registerWidget()` there instead — useful for a widget you consider a core, built-in part of the dashboard rather than a self-contained plugin.)
 
-The refresh interval doesn't need to be set manually: it's read from the `refresh` field in `manifest.json` (seconds) via `/api/widgets` and passed to `setInterval` automatically.
+The refresh interval doesn't need to be set manually either way: it's read from the `refresh` field in `manifest.json` (seconds) via `/api/widgets` and passed to `setInterval` automatically.

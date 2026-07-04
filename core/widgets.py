@@ -47,6 +47,7 @@ def get_widgets_data():
                 "template": module.template,
                 "service": module.service,
                 "api": module.api,
+                "script": module.script,
                 "available": status["available"],
                 "error": status["error"],
             })
@@ -62,6 +63,7 @@ def get_widgets_data():
                 "template": module.template,
                 "service": module.service,
                 "api": module.api,
+                "script": module.script,
                 "available": status["available"],
                 "error": status["error"],
             })

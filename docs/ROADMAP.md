@@ -38,6 +38,7 @@
 - Widget Lock: an optional `locked` flag on a layout item, toggled via a 🔓/🔒 button in Settings. A locked widget can't be picked up by drag & drop and its span/height dropdowns are disabled, so a position/size you've settled on can't be nudged by accident
 - Responsive Layout: below 640px every widget stacks full-width regardless of its chosen span (a 12-col grid otherwise leaves span-3/span-4 widgets too narrow to read on a phone), and the topbar/footer/Settings drawer adapt to a narrow viewport
 - Tablet Mode: touch drag & drop for the layout editor. HTML5 native drag & drop never fires on touch devices at all, so `static/js/settings.js`'s `initDragAndDrop()` gained a parallel `touchstart`/`touchmove`/`touchend` implementation reaching the same `reorderWidget()` outcome, respecting Widget Lock exactly like the mouse version
+- Widget Framework / Plugin Architecture: a module can ship its own `widget.js` (auto-served at `/modules/<id>/widget.js`, auto-included by the dashboard page) that self-registers via `registerWidget()` instead of needing `static/js/widgets.js` edited for every new widget. `modules/cameras/widget.js` is the real example — its updater and fast image-refresh loop moved out of `widgets.js` entirely. Verified with a from-scratch module (`examples/example_widget/`, installed and removed during testing): it rendered live data with zero central-file edits
 
 ---
 
@@ -48,10 +49,6 @@
 - Meshtastic
 - Zabbix
 - Notifications
-
-## Platform
-
-- Widget Framework / Plugin Architecture (one and the same: let a module ship its own JS that self-registers, instead of centrally editing `static/js/widgets.js` for every new widget)
 
 ---
 

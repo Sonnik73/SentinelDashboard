@@ -18,6 +18,7 @@ class ModuleInfo:
     template: str | None = None
     service: str | None = None
     api: str | None = None
+    script: str | None = None
 
 
 def load_module_manifest(manifest_file: Path) -> ModuleInfo:
@@ -31,6 +32,7 @@ def load_module_manifest(manifest_file: Path) -> ModuleInfo:
     default_template = f"widgets/{module_id}.html"
     default_service = "service.py" if (module_path / "service.py").exists() else None
     default_api = "api.py" if (module_path / "api.py").exists() else None
+    default_script = "widget.js" if (module_path / "widget.js").exists() else None
 
     return ModuleInfo(
         id=module_id,
@@ -43,6 +45,7 @@ def load_module_manifest(manifest_file: Path) -> ModuleInfo:
         template=manifest.get("template", default_template),
         service=manifest.get("service", default_service),
         api=manifest.get("api", default_api),
+        script=manifest.get("script", default_script),
     )
 
 
