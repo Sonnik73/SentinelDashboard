@@ -4,6 +4,17 @@
 
 ---
 
+## v2.7.8
+
+### Added
+- Widget Fullscreen: every widget card now has a ⛶ toggle in its top-right corner (a camera feed, the news list, system metrics - any widget) that expands it to fill the screen using the browser's native Fullscreen API. The button is injected once by `templates/dashboard.html`'s grid/pool loops rather than by each widget's own template, and `static/js/ui.js`'s `initFullscreenToggles()` wires it generically - no per-widget JS needed, and it works on a widget's own `widget.js`-driven card exactly the same as a built-in one
+- Camera snapshots drop their compact-card `aspect-ratio: 4/3` while fullscreen (`object-fit: contain` instead) so a feed fills more of the screen for a closer look, rather than staying letterboxed to the grid card's proportions
+
+### Verification
+- Verified with Playwright: clicking the toggle enters fullscreen on the correct widget's cell (`document.fullscreenElement` matches), the icon flips to the exit glyph, and a second click exits cleanly
+
+---
+
 ## v2.7.7
 
 ### Added
