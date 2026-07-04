@@ -373,3 +373,42 @@ body {
 .camera-config-form {
     margin-top: 14px;
 }
+
+/* ------------------------------
+   Responsive Layout
+   ------------------------------
+   Below this width a 12-col grid leaves span-3/span-4 widgets too narrow
+   to read (text wraps constantly, camera snapshots shrink to postage-stamp
+   size) - stack every widget full-width instead, regardless of the span
+   picked in Settings for larger screens. */
+@media (max-width: 640px) {
+    .dashboard {
+        padding: 10px;
+    }
+
+    .layout-row {
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .layout-cell {
+        grid-column: span 12 !important;
+    }
+
+    .topbar {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .settings-drawer {
+        width: 100%;
+        right: -100%;
+    }
+}
