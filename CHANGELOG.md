@@ -4,6 +4,16 @@
 
 ---
 
+## v2.3.1
+
+### Fixed
+- `templates/dashboard.html` never bumped the `?v=` cache-busting query param on `widgets.js`, `settings.js`, or `app.js` despite both files being edited repeatedly across this whole session (v1.3.4 through v2.3.0) — only CSS got this treatment consistently. Browsers that had cached an old copy of these files (e.g. from before v1.4.0) could keep running stale JS indefinitely after a `git pull`, missing every view-management/import-export/drag-and-drop feature added since. Bumped `widgets.js` and `settings.js` to `?v=2`, `app.js` to `?v=28`
+
+### Note
+- If a browser is still showing old behavior after this, a hard refresh (Ctrl+Shift+R / Cmd+Shift+R) forces it to ignore any remaining cached copy regardless of the `?v=` value already in its cache
+
+---
+
 ## v2.3.0
 
 ### Added
