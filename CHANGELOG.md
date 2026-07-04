@@ -4,6 +4,14 @@
 
 ---
 
+## v2.7.2
+
+### Added
+- Widget Height: an optional per-widget `height` (px) in the layout, editable via a new dropdown next to the span selector in Settings ("Авто" / "Компактно" 220px / "Средне" 360px / "Высоко" 600px). Absent/0 keeps the pre-existing "grow to fit content" behavior, so every existing view renders unchanged until a height is explicitly picked. Applied on `.layout-cell` (both the server-rendered template and the client-side `applyView()` re-render), with the widget card stretching to fill and scrolling internally (`overflow-y: auto`) if its content is taller than the fixed height
+- No backend change needed — `modules/views/service.py`'s `normalize_view()` already passes unknown layout-item keys through untouched, so `height` just rides along the same path as `span`
+
+---
+
 ## v2.7.1
 
 ### Added
