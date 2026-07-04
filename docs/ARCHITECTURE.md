@@ -140,7 +140,7 @@ Each layout consists of rows.
 
 Each row contains widgets.
 
-Each widget owns its own width (span).
+Each widget owns its own width (span). It can optionally also own a fixed height (`height`, in px) instead of the default "grow to fit content" — set via the height dropdown next to the span selector in Settings. Absent/0 means auto, so existing views are unaffected until a height is explicitly chosen.
 
 Example:
 

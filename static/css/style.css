@@ -280,6 +280,11 @@ body {
     min-width: 0;
 }
 
+.layout-cell.fixed-height > [data-widget] {
+    height: 100%;
+    overflow-y: auto;
+}
+
 .layout-cell.draggable {
     cursor: grab;
 }

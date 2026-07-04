@@ -72,6 +72,12 @@ async function loadSettingsDrawer() {
                         <option value="6" ${getWidgetSpan(widget.id) === 6 ? "selected" : ""}>1/2</option>
                         <option value="12" ${getWidgetSpan(widget.id) === 12 ? "selected" : ""}>Вся ширина</option>
                     </select>
+                    <select class="widget-height-select" data-widget-height="${widget.id}">
+                        <option value="0" ${getWidgetHeight(widget.id) === 0 ? "selected" : ""}>Авто</option>
+                        <option value="220" ${getWidgetHeight(widget.id) === 220 ? "selected" : ""}>Компактно</option>
+                        <option value="360" ${getWidgetHeight(widget.id) === 360 ? "selected" : ""}>Средне</option>
+                        <option value="600" ${getWidgetHeight(widget.id) === 600 ? "selected" : ""}>Высоко</option>
+                    </select>
                 </label>
             `;
         });
@@ -82,14 +88,27 @@ async function loadSettingsDrawer() {
                 applyView();
             });
         });
- 
+
         container.querySelectorAll(".widget-span-select").forEach(select => {
             select.addEventListener("change", () => {
                 setWidgetSpan(
                     select.dataset.widgetSpan,
                     Number(select.value)
                 );
- 
+
+                viewEditor.currentLayout = buildLayoutFromSettings(container);
+                updateEditorState();
+                applyView();
+            });
+        });
+
+        container.querySelectorAll(".widget-height-select").forEach(select => {
+            select.addEventListener("change", () => {
+                setWidgetHeight(
+                    select.dataset.widgetHeight,
+                    Number(select.value)
+                );
+
                 viewEditor.currentLayout = buildLayoutFromSettings(container);
                 updateEditorState();
                 applyView();
@@ -505,6 +524,25 @@ function setWidgetSpan(widgetId, span) {
     }
 }
 
+// height is optional - absent/0 means "auto" (the card grows to fit its
+// content, the pre-existing default behavior), matching the "Авто" option
+// in the height dropdown rather than forcing every widget to a fixed size.
+function getWidgetHeight(widgetId) {
+    const item = findLayoutItem(widgetId);
+    return item && item.height ? item.height : 0;
+}
+
+function setWidgetHeight(widgetId, height) {
+    const item = findLayoutItem(widgetId);
+    if (item) {
+        if (height) {
+            item.height = height;
+        } else {
+            delete item.height;
+        }
+    }
+}
+
 function buildLayoutFromSettings(container) {
     const checkedIds = new Set(
         Array.from(container.querySelectorAll("input[type='checkbox']:checked"))
@@ -527,8 +565,11 @@ function buildLayoutFromSettings(container) {
     let currentWidth = 0;
 
     viewEditor.widgetOrder.forEach(widgetId => {
-        const select = container.querySelector(`[data-widget-span="${widgetId}"]`);
-        const span = select ? Number(select.value) : getWidgetSpan(widgetId);
+        const spanSelect = container.querySelector(`[data-widget-span="${widgetId}"]`);
+        const span = spanSelect ? Number(spanSelect.value) : getWidgetSpan(widgetId);
+
+        const heightSelect = container.querySelector(`[data-widget-height="${widgetId}"]`);
+        const height = heightSelect ? Number(heightSelect.value) : getWidgetHeight(widgetId);
 
         if (currentWidth + span > 12 && currentRow.length > 0) {
             rows.push(currentRow);
@@ -536,10 +577,11 @@ function buildLayoutFromSettings(container) {
             currentWidth = 0;
         }
 
-        currentRow.push({
-            widget: widgetId,
-            span: span,
-        });
+        const item = { widget: widgetId, span: span };
+        if (height) {
+            item.height = height;
+        }
+        currentRow.push(item);
 
         currentWidth += span;
     });
@@ -590,6 +632,14 @@ function applyView() {
             );
 
             cell.classList.add(`span-${span}`);
+
+            if (item.height) {
+                cell.classList.add("fixed-height");
+                cell.style.height = `${item.height}px`;
+            } else {
+                cell.classList.remove("fixed-height");
+                cell.style.height = "";
+            }
 
             const card = cell.querySelector("[data-widget]");
             if (card) {
