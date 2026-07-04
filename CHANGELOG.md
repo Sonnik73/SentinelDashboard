@@ -4,6 +4,19 @@
 
 ---
 
+## v2.7.6
+
+### Added
+- Plugin Architecture / Widget Framework: a module can now ship its own `widget.js` in its folder (same convention as `service.py`/`api.py` — `core/loader.py` detects it, `routes/dashboard.py` serves it at `/modules/<id>/widget.js`, `templates/dashboard.html` includes it automatically) instead of needing `static/js/widgets.js` edited for every new widget
+- New `static/js/registry.js` holds the shared `WIDGET_UPDATERS` map and a `registerWidget(id, updater)` function, loaded first so both `widgets.js`'s built-in updaters and any module's own `widget.js` can call it regardless of load order between them
+- `modules/cameras/widget.js` is the real, working example: `updateCamera()` and the independent ~333ms fast image-refresh loop moved out of `static/js/widgets.js` entirely, changing nothing about camera behavior (re-verified: status text and live image refresh both still work)
+- `examples/example_widget/` gained a `widget.js` demonstrating the new convention; the README now documents both options (a module's own `widget.js`, or the older direct edit of `static/js/widgets.js` for something considered a core built-in widget)
+
+### Verification
+- Temporarily installed `examples/example_widget/` as a real module (`modules/example/`) and confirmed it rendered live data end-to-end with zero central-file edits, then removed it again
+
+---
+
 ## v2.7.5
 
 ### Added
