@@ -11,4 +11,5 @@ document.addEventListener("DOMContentLoaded", () => {
     initCameraConfigActions();
     initRssConfigActions();
     initDragAndDrop();
+    initFullscreenToggles();
 });

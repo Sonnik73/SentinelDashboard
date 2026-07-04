@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel Dashboard</title>
 
-    <link rel="stylesheet" href="/static/css/style.css?v=23">
+    <link rel="stylesheet" href="/static/css/style.css?v=24">
 </head>
 
 <body>
@@ -167,6 +167,7 @@
                     {% set widget_id = widget.widget %}
                     {% set widget_title = widget_titles.get(widget_id) %}
                     {% set instance_id = widget_id.split(':')[1] if ':' in widget_id else None %}
+                    <button type="button" class="widget-fullscreen-toggle" draggable="false" title="Развернуть на весь экран">⛶</button>
                     {% include template ignore missing %}
                 {% endif %}
             </div>
@@ -184,6 +185,7 @@
         <div class="layout-cell span-12">
             {% set widget_title = widget_titles.get(widget_id) %}
             {% set instance_id = widget_id.split(':')[1] if ':' in widget_id else None %}
+            <button type="button" class="widget-fullscreen-toggle" draggable="false" title="Развернуть на весь экран">⛶</button>
             {% include template ignore missing %}
         </div>
         {% endif %}
@@ -192,13 +194,13 @@
 
 <script src="/static/js/registry.js?v=1"></script>
 <script src="/static/js/api.js?v=1"></script>
-<script src="/static/js/ui.js?v=1"></script>
+<script src="/static/js/ui.js?v=2"></script>
 {% for script_url in widget_scripts %}
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
 <script src="/static/js/settings.js?v=8"></script>
-<script src="/static/js/app.js?v=30"></script>
+<script src="/static/js/app.js?v=31"></script>
 
 <footer class="footer">
     <div>
