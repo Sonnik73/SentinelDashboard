@@ -4,6 +4,18 @@
 
 ---
 
+## v2.7.0
+
+### Added
+- Cameras can now be added, edited, and removed from the Settings drawer instead of hand-editing `config/dashboard.json` — a new "Камеры" section lists configured cameras with inline-editable name/IP/port/path plus a form to add a new one. Backed by `GET /api/cameras/config` and `POST /api/cameras/config/add` / `.../update` / `.../delete` in `modules/cameras/api.py`
+- `modules/cameras/service.py` now reads `cameras.hosts` fresh on every call instead of caching it at import time, so a camera added through the UI shows up immediately in the widget list and Settings checklist — no server restart needed, unlike every other module (and unlike a manual edit of the same JSON file)
+- `core/config.py` gets `save_config()`/`update_section()` for writing `config/dashboard.json` back out, using the same atomic-write pattern (unique temp file + rename) already used for `core/cache.py` and camera frames
+
+### Changed
+- Camera `id` is validated (letters, numbers, hyphens, underscores only) since it's used directly in the snapshot URL and cache filenames; deleting a camera also stops its running ffmpeg stream if one was active, rather than leaving it orphaned until the next restart
+
+---
+
 ## v2.6.0
 
 ### Added
