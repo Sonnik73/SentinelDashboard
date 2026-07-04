@@ -26,7 +26,24 @@ pip install -r requirements.txt
 
 The weather widget scrapes rp5.ru — no API key needed, but each city in `config/dashboard.json` under `weather.cities` needs its exact rp5.ru page URL (there's no reliable way to generate it from a city name). To find it: visit rp5.ru, search for your city, and copy the address bar (e.g. `https://rp5.ru/Погода_в_Ульяновске`). See [MODULES.md](MODULES.md) for details.
 
-## 5. Run the dashboard
+## 5. Set up cameras (optional)
+
+The cameras widget grabs a still frame from each camera's RTSP stream using `ffmpeg`, which isn't installed by default on Raspberry Pi OS:
+
+```bash
+sudo apt install ffmpeg
+```
+
+Each camera is listed in `config/dashboard.json` under `cameras.hosts` (`id`, `name`, `ip`, `port`, `path` — the RTSP path is model-specific, see [MODULES.md](MODULES.md)). The username/password are shared across all cameras and read from the environment, not committed to config:
+
+```bash
+export CAMERA_USERNAME=admin
+export CAMERA_PASSWORD=your-camera-password
+```
+
+If ffmpeg isn't installed or a camera is unreachable, the widget falls back to the last cached snapshot (or shows "нет сигнала") instead of crashing — the rest of the dashboard is unaffected.
+
+## 6. Run the dashboard
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
@@ -55,6 +72,8 @@ After=network.target
 Type=simple
 User=<your-username>
 WorkingDirectory=/home/<your-username>/sentinel
+Environment=CAMERA_USERNAME=admin
+Environment=CAMERA_PASSWORD=your-camera-password
 ExecStart=/home/<your-username>/sentinel/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=5

@@ -46,6 +46,14 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 - Computes days remaining until each birthday and sorts by proximity
 - Entries with an unparseable `date` field are still returned, flagged with an `error` field instead of being dropped
 
+### cameras
+
+- Data source: a single still frame grabbed from each camera's RTSP stream via `ffmpeg` (`ffmpeg -rtsp_transport tcp -i <rtsp-url> -frames:v 1 -f image2 -`, output captured from stdout — no temp files, no video decoding beyond the first keyframe). Not a live video stream; the widget polls a fresh snapshot on the manifest's `refresh` interval (10s by default)
+- Configured in `config/dashboard.json` under `cameras.hosts`, each entry needs `id` (used in the API URL and cache filename), `name` (display label), `ip`, and optionally `port` (default 554) and `path` (default `/1/1`) — the RTSP path is camera-model-specific; `/1/1` is a common Tiandy convention but **unverified beyond a specific model/firmware**, confirm it works once the camera is on the network and adjust `path` if not
+- Credentials are shared across all cameras and read from `CAMERA_USERNAME`/`CAMERA_PASSWORD` environment variables (default username `admin` if unset), not stored in `config/dashboard.json` — same reasoning as `YANDEX_WEATHER_API_KEY` in the weather module: don't commit access credentials to a file that's tracked in git
+- Endpoints: `GET /api/cameras` (per-camera status: `source`, `last_sync`, `error`) and `GET /api/cameras/<id>/snapshot` (the actual JPEG, `Content-Type: image/jpeg`). The widget's `<img>` tag points directly at the snapshot endpoint with a cache-busting timestamp query param; a failed load falls back to a `camera-snapshot-error` CSS class via the `onerror` handler
+- Offline behavior: on failure (ffmpeg not installed, camera unreachable, wrong RTSP path/credentials, timeout), falls back to the last successful JPEG cached at `data/camera_<id>.jpg`, with status metadata in `data/cameras_cache.json` (same `core/cache.py`-based pattern as weather/rss, just split into a binary file + a small JSON status blob since `core/cache.py` only handles JSON). If no snapshot was ever captured, the endpoint returns 404/502 and the frontend shows "нет сигнала"
+
 ---
 
 ## View System (`modules/views`)
@@ -68,7 +76,7 @@ Provided functions:
 
 ## Offline Caching
 
-`weather` and `rss` are the only modules that fetch external data, and both follow the same pattern through `core/cache.py`: a successful response is saved to `data/<name>_cache.json`, and on failure (no network, timeout, API error) the last cached copy is served instead, marked `"source": "cache"`. This is the mechanism behind the project's offline-first behavior for online-dependent widgets.
+`weather`, `rss`, and `cameras` fetch data from outside the process (external websites for the first two, local-network RTSP cameras for the third), and all follow the same pattern through `core/cache.py`: a successful response is saved to `data/<name>_cache.json`, and on failure (no network, timeout, API error) the last cached copy is served instead, marked `"source": "cache"`. `cameras` adapts this for binary data — the JSON cache only holds status metadata, the actual JPEG bytes live in a separate `data/camera_<id>.jpg` file. This is the mechanism behind the project's offline-first behavior for modules that depend on something outside their own process.
 
 ---
 

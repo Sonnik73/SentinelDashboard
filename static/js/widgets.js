@@ -161,6 +161,47 @@ async function updateNetwork() {
 }
 
 
+async function updateCameras() {
+    const container = document.getElementById("cameras-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/cameras");
+
+        if (!data.cameras || data.cameras.length === 0) {
+            container.innerHTML = `<p class="small">Камеры не настроены</p>`;
+            return;
+        }
+
+        container.innerHTML = "";
+
+        data.cameras.forEach(camera => {
+            const statusIcon = camera.source === "online" ? "🟢" :
+                camera.source === "cache" ? "🟡" : "🔴";
+
+            container.innerHTML += `
+                <div class="camera-item">
+                    <div class="camera-header">
+                        <b>${camera.name}</b>
+                        <span class="small">${statusIcon} ${camera.last_sync ?? "нет сигнала"}</span>
+                    </div>
+                    <img
+                        class="camera-snapshot"
+                        src="/api/cameras/${camera.id}/snapshot?t=${Date.now()}"
+                        alt="${camera.name}"
+                        onerror="this.classList.add('camera-snapshot-error')"
+                        onload="this.classList.remove('camera-snapshot-error')"
+                    >
+                </div>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Cameras:", error);
+    }
+}
+
+
 // ------------------------------
 // Update Scheduler
 // ------------------------------
@@ -171,6 +212,7 @@ const WIDGET_UPDATERS = {
     rss: updateRSS,
     network: updateNetwork,
     birthdays: updateBirthdays,
+    cameras: updateCameras,
 };
 
 Object.values(WIDGET_UPDATERS).forEach(updater => updater());

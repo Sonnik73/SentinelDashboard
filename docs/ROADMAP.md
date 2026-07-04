@@ -29,6 +29,7 @@
 - Delete View
 - Import / Export Views
 - Drag & Drop Layout Editor (mouse only — see Roadmap's Layout section for touch/tablet support)
+- Cameras Widget (RTSP snapshot via `ffmpeg`, not live streaming — see `docs/MODULES.md`; RTSP path convention not yet verified against real hardware)
 
 ---
 
@@ -36,7 +37,6 @@
 
 ## Widgets
 
-- Cameras
 - Meshtastic
 - Zabbix
 - Notifications
