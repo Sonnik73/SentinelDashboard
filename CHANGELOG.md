@@ -4,6 +4,16 @@
 
 ---
 
+## v2.7.1
+
+### Added
+- Module load-failure visibility: `core/module_api.py` now tracks whether each module's `api.py` import succeeded (`MODULE_STATUS`), exposed via a new `get_module_status()`. `core/widgets.py` surfaces this as `available`/`error` on every widget from `/api/widgets` and `/api/views`. Previously, a module whose `api.py`/`service.py` failed to import (e.g. `config/dashboard.json` missing a section a module expects) still listed as a completely normal, addable widget in Settings — now it shows struck through with a ⚠️ tooltip carrying the actual error, instead of silently hanging on "Loading..." forever. Verified by temporarily breaking the weather module's config section: server stayed up, `available: false` with the real `KeyError` message appeared in `/api/widgets`, Settings rendered it struck through
+
+### Roadmap
+- Marked Wall Mode and Widget Resize as already satisfied (an ordinary view already covers "wall mode", the span dropdown already covers "resize") — no code needed for either, just closing them out in `docs/ROADMAP.md`
+
+---
+
 ## v2.7.0
 
 ### Added
