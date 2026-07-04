@@ -4,6 +4,20 @@
 
 ---
 
+## v2.4.0
+
+### Added
+- Cameras widget — the `cameras.html` template placeholder now has a real module behind it (`modules/cameras/`), auto-discovered with zero changes elsewhere thanks to the module convention
+- `modules/cameras/service.py` grabs a single still frame from each camera's RTSP stream via `ffmpeg` (`-frames:v 1 -f image2 -`, captured from stdout, no temp files, no video decoding). This is a snapshot refreshed on an interval (10s by default), not a live video stream — browsers can't play RTSP directly, and this avoids needing a transcoding pipeline (HLS/WebRTC) on Raspberry Pi hardware
+- `GET /api/cameras` (per-camera status) and `GET /api/cameras/<id>/snapshot` (the JPEG itself), following the same offline-cache pattern as weather/rss: on failure, serves the last successful snapshot from `data/camera_<id>.jpg` instead of breaking, with status metadata in `data/cameras_cache.json`
+- `config/dashboard.json` gets a new `cameras.hosts` section (`id`, `name`, `ip`, `port`, `path`); credentials are shared across cameras and read from `CAMERA_USERNAME`/`CAMERA_PASSWORD` environment variables rather than committed, same reasoning as the weather module's API key handling
+- INSTALL.md documents the new `ffmpeg` system dependency and the camera environment variables, including the systemd unit example
+
+### Known limitation
+- The RTSP path (`path` in config, defaults to `/1/1`) is a common Tiandy convention but **not yet verified against real hardware** — the cameras this was built for hadn't arrived yet. Verified end-to-end with a real `ffmpeg` binary against unreachable/fake IPs: connection failures, timeouts, and unknown-camera-id all degrade cleanly (502/404 with a clear message, falling back to cache, no crash) — only the actual RTSP path/credentials against a live Tiandy TC-C320N remain to be confirmed
+
+---
+
 ## v2.3.1
 
 ### Fixed
