@@ -195,6 +195,14 @@ Widgets are reusable and independent.
 
 ---
 
+# Theming
+
+`static/css/style.css` defines its color tokens as CSS custom properties on `:root` (dark, the default) with a `:root[data-theme="light"]` override block for the alternative. The `data-theme` attribute is set on `<html>` by an inline script in `templates/dashboard.html`'s `<head>` — before the stylesheet paints, reading `localStorage`, so a saved preference never flashes the wrong theme first. `static/js/theme.js` wires up the 🌙/☀️ toggle button in the topbar, applying and persisting the choice; the preference is per-browser (`localStorage`), not per-view or server-side, since it's a device/user display preference rather than dashboard content.
+
+Not every color is themed — a few (the accent blue border, status green, the camera snapshot's placeholder black) are intentionally the same in both themes rather than variables, since they're semantic (an "online" indicator, a video-signal placeholder) rather than surface/background colors.
+
+---
+
 # Live Preview
 
 Layout changes are immediately reflected in the browser without reloading the page.

@@ -3,6 +3,7 @@
 // ------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
+    initThemeToggle();
     initSettingsDrawer();
     initViewEditorActions();
     initCreateViewAction();
