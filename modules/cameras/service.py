@@ -17,12 +17,12 @@ def get_hosts():
     return get_section("cameras").get("hosts", [])
 
 
-# Genuine 3 fps rules out spawning ffmpeg per request (an RTSP handshake
-# alone can take 1-2s). Instead one ffmpeg process per camera runs
-# continuously, streaming MJPEG to stdout; a background thread splits it
-# into frames and writes each one atomically (temp file + rename) so a
+# Genuine multi-fps rules out spawning ffmpeg per request (an RTSP
+# handshake alone can take 1-2s). Instead one ffmpeg process per camera
+# runs continuously, streaming MJPEG to stdout; a background thread splits
+# it into frames and writes each one atomically (temp file + rename) so a
 # concurrent HTTP reader never sees a torn/partial JPEG.
-FRAME_RATE = 3
+FRAME_RATE = 2
 STARTUP_TIMEOUT = 8          # max wait for a fresh stream's first frame
 STALE_AFTER = 5              # seconds without a new frame before restarting
 STATUS_WRITE_INTERVAL = 2    # throttle status + last-known-good writes
@@ -226,6 +226,7 @@ def _start_stream(camera_id):
     stream = Stream(camera_id)
 
     LIVE_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     stream.process = subprocess.Popen(
         [

@@ -46,8 +46,9 @@ function refreshCameraFrames() {
 registerWidget("cameras", updateCamera);
 
 // Runs independently of the manifest-driven refresh handled by
-// registerWidget above - camera frames need ~3/second, far faster than
-// any widget's `refresh` field expresses.
-const CAMERA_FRAME_INTERVAL_MS = 333;
+// registerWidget above - camera frames need ~2/second (matches
+// FRAME_RATE in modules/cameras/service.py), far faster than any widget's
+// `refresh` field expresses.
+const CAMERA_FRAME_INTERVAL_MS = 500;
 refreshCameraFrames();
 setInterval(refreshCameraFrames, CAMERA_FRAME_INTERVAL_MS);
