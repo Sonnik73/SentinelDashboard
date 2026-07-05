@@ -4,6 +4,16 @@
 
 ---
 
+## v2.8.6
+
+### Added
+- `requirements.txt` — previously missing despite `docs/INSTALL.md` and `README.md` both referencing `pip install -r requirements.txt`. Lists the runtime dependencies actually imported by the code (`fastapi`, `uvicorn`, `jinja2`, `psutil`, `httpx`, `feedparser`), pinned as minimum versions matching what's been tested against this session
+
+### Verification
+- Installed into a fresh venv and confirmed `app.py` imports cleanly with nothing else present
+
+---
+
 ## v2.8.5
 
 ### Added
