@@ -13,4 +13,5 @@ document.addEventListener("DOMContentLoaded", () => {
     initRssConfigActions();
     initDragAndDrop();
     initFullscreenToggles();
+    initFullscreenSwipe();
 });

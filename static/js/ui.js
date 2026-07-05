@@ -50,3 +50,56 @@ function initFullscreenToggles() {
         });
     });
 }
+
+// Switches fullscreen straight from one widget's cell to another's
+// (direction: 1 = next, -1 = previous), wrapping around at the ends.
+// Calling requestFullscreen() on a different element while one is
+// already fullscreen just swaps the fullscreen target in modern
+// browsers - no need to exit first, which also avoids the "no longer a
+// direct user gesture" pitfall of exiting async and re-requesting later.
+function swipeToWidget(direction) {
+    const grid = document.querySelector(".grid");
+    if (!grid) return;
+
+    const cells = Array.from(grid.querySelectorAll(".layout-cell"));
+    const currentIndex = cells.indexOf(document.fullscreenElement);
+    if (currentIndex === -1) return;
+
+    const nextCell = cells[(currentIndex + direction + cells.length) % cells.length];
+    if (!nextCell || nextCell === document.fullscreenElement) return;
+
+    if (nextCell.requestFullscreen) {
+        nextCell.requestFullscreen();
+    } else if (nextCell.webkitRequestFullscreen) {
+        nextCell.webkitRequestFullscreen();
+    }
+}
+
+// Swipe left/right while a widget is fullscreen to jump to the next/
+// previous one - built for Tablet/Wall Mode, where exiting fullscreen
+// just to tap another widget's toggle is a lot of friction. Guards
+// against vertical scrolling inside a widget's own scrollable content
+// (a long news list, say) being misread as a swipe.
+function initFullscreenSwipe() {
+    const SWIPE_THRESHOLD_PX = 60;
+    let touchStart = null;
+
+    document.addEventListener("touchstart", event => {
+        if (!document.fullscreenElement) return;
+        const touch = event.touches[0];
+        touchStart = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+
+    document.addEventListener("touchend", event => {
+        if (!document.fullscreenElement || !touchStart) return;
+
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - touchStart.x;
+        const deltaY = touch.clientY - touchStart.y;
+        touchStart = null;
+
+        if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+        swipeToWidget(deltaX < 0 ? 1 : -1);
+    });
+}
