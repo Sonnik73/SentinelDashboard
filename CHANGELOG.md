@@ -4,6 +4,17 @@
 
 ---
 
+## v2.8.3
+
+### Added
+- Camera quality controls: each camera now has a `resolution` dropdown (original / 1280x720 / 854x480 / 640x360, passed to ffmpeg's `-vf scale=`) and a `quality` dropdown (high/medium/low/minimum, mapped to ffmpeg's `-q:v`) in the Settings "Камеры" section, both on the add form and on each existing camera's editable row. Backed by new `quality`/`resolution` fields on the camera host in `config/dashboard.json`, validated against a fixed set of choices in `modules/cameras/service.py`
+- Changing quality or resolution for an existing camera now restarts its running stream (drops it from the in-memory `_streams` registry so `ensure_stream()` starts a fresh one on the next request) instead of only taking effect after the process happens to restart on its own — same "picked up live, no server restart" pattern as the rest of camera config
+
+### Verification
+- Verified the ffmpeg command actually receives `-q:v <quality>` and `-vf scale=<W>:<H>` by capturing the real `subprocess.Popen` args against a synthetic source, and confirmed the produced JPEG is actually the requested resolution (`file` reported the correct WxH). Full add/edit/delete round trip verified via the API and through the Settings UI in a browser
+
+---
+
 ## v2.8.2
 
 ### Changed
