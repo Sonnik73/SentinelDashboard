@@ -4,6 +4,17 @@
 
 ---
 
+## v2.8.1
+
+### Added
+- Themes: dark (the existing look, still the default) and a new light theme, toggled via a 🌙/☀️ button in the topbar. `static/css/style.css`'s colors are now CSS custom properties on `:root`, with a `:root[data-theme="light"]` override block for the alternative — a few intentionally-semantic colors (accent blue, status green, the camera placeholder's black) stay the same in both themes rather than becoming variables
+- New `static/js/theme.js` wires up the toggle and persists the choice to `localStorage` (per-browser, not per-view/server-side, since it's a device display preference). `templates/dashboard.html`'s `<head>` applies the saved theme via an inline script before the stylesheet paints, so a saved preference never flashes the wrong theme first on load
+
+### Verification
+- Verified with Playwright: toggling changes the computed background color immediately, persists in `localStorage`, and survives a full page reload with no flash; screenshotted both themes to confirm text stays readable in light mode (dark headings on a light card, not just the light theme applied without contrast checking)
+
+---
+
 ## v2.8.0
 
 Closes out `docs/ROADMAP.md`'s "Version 2.1" Layout and Platform sections in full (everything except the three planned widgets — Meshtastic, Zabbix, Notifications — which stay open for a future sprint):
