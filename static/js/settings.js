@@ -173,6 +173,9 @@ async function loadCamerasConfig() {
         }
 
         data.cameras.forEach(camera => {
+            const resolution = camera.resolution ?? "";
+            const quality = camera.quality ?? 5;
+
             const item = document.createElement("div");
             item.className = "camera-config-item";
             item.dataset.cameraId = camera.id;
@@ -181,6 +184,18 @@ async function loadCamerasConfig() {
                 <input type="text" class="settings-view-select camera-config-ip" value="${camera.ip}" placeholder="IP-адрес">
                 <input type="text" class="settings-view-select camera-config-port" value="${camera.port ?? 554}" placeholder="Порт">
                 <input type="text" class="settings-view-select camera-config-path" value="${camera.path ?? "/1/1"}" placeholder="Путь">
+                <select class="settings-view-select camera-config-resolution">
+                    <option value="" ${resolution === "" ? "selected" : ""}>Разрешение: оригинал</option>
+                    <option value="1280x720" ${resolution === "1280x720" ? "selected" : ""}>Разрешение: 1280x720</option>
+                    <option value="854x480" ${resolution === "854x480" ? "selected" : ""}>Разрешение: 854x480</option>
+                    <option value="640x360" ${resolution === "640x360" ? "selected" : ""}>Разрешение: 640x360</option>
+                </select>
+                <select class="settings-view-select camera-config-quality">
+                    <option value="2" ${quality === 2 ? "selected" : ""}>Качество: высокое</option>
+                    <option value="5" ${quality === 5 ? "selected" : ""}>Качество: среднее</option>
+                    <option value="10" ${quality === 10 ? "selected" : ""}>Качество: низкое</option>
+                    <option value="20" ${quality === 20 ? "selected" : ""}>Качество: минимальное</option>
+                </select>
                 <div class="settings-view-manage-row">
                     <button class="settings-action-button camera-config-save">💾 Сохранить</button>
                     <button class="settings-action-button camera-config-delete">🗑 Удалить</button>
@@ -200,6 +215,8 @@ async function loadCamerasConfig() {
                         ip: item.querySelector(".camera-config-ip").value,
                         port: item.querySelector(".camera-config-port").value,
                         path: item.querySelector(".camera-config-path").value,
+                        resolution: item.querySelector(".camera-config-resolution").value,
+                        quality: item.querySelector(".camera-config-quality").value,
                     });
 
                     button.textContent = "✅ Сохранено";
@@ -247,6 +264,8 @@ function initCameraConfigActions() {
         const ipInput = document.getElementById("camera-config-ip");
         const portInput = document.getElementById("camera-config-port");
         const pathInput = document.getElementById("camera-config-path");
+        const resolutionInput = document.getElementById("camera-config-resolution");
+        const qualityInput = document.getElementById("camera-config-quality");
 
         const id = idInput.value.trim();
         const name = nameInput.value.trim();
@@ -267,6 +286,8 @@ function initCameraConfigActions() {
                 ip,
                 port: portInput.value.trim(),
                 path: pathInput.value.trim(),
+                resolution: resolutionInput.value,
+                quality: qualityInput.value,
             });
 
             [idInput, nameInput, ipInput, portInput, pathInput].forEach(input => {

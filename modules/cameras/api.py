@@ -32,6 +32,8 @@ def api_add_camera(payload: dict = Body(...)):
             payload.get("ip", ""),
             payload.get("port", 554),
             payload.get("path", "/1/1"),
+            payload.get("quality"),
+            payload.get("resolution", ""),
         )
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
@@ -48,6 +50,8 @@ def api_update_camera(payload: dict = Body(...)):
             ip=payload.get("ip"),
             port=payload.get("port"),
             path=payload.get("path"),
+            quality=payload.get("quality"),
+            resolution=payload.get("resolution"),
         )
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))

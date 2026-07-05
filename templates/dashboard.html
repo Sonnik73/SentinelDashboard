@@ -109,6 +109,20 @@
             <input type="text" id="camera-config-port" class="settings-view-select" placeholder="Порт (по умолчанию 554)">
             <input type="text" id="camera-config-path" class="settings-view-select" placeholder="Путь (по умолчанию /1/1)">
 
+            <select id="camera-config-resolution" class="settings-view-select">
+                <option value="">Разрешение: оригинал</option>
+                <option value="1280x720">Разрешение: 1280x720</option>
+                <option value="854x480">Разрешение: 854x480</option>
+                <option value="640x360">Разрешение: 640x360</option>
+            </select>
+
+            <select id="camera-config-quality" class="settings-view-select">
+                <option value="2">Качество: высокое</option>
+                <option value="5" selected>Качество: среднее</option>
+                <option value="10">Качество: низкое</option>
+                <option value="20">Качество: минимальное</option>
+            </select>
+
             <button id="add-camera-config" class="settings-action-button">
                 ➕ Добавить камеру
             </button>
@@ -207,7 +221,7 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=8"></script>
+<script src="/static/js/settings.js?v=9"></script>
 <script src="/static/js/app.js?v=32"></script>
 
 <footer class="footer">

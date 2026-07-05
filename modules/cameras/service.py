@@ -78,10 +78,39 @@ def _save_hosts(hosts: list):
     update_section("cameras", {"hosts": hosts})
 
 
-def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = "/1/1"):
+# JPEG quality passed to ffmpeg's -q:v (2 = best/largest, 31 = worst/
+# smallest). Resolution is passed to -vf scale=; "" means no scaling, use
+# the camera's native resolution as-is.
+DEFAULT_QUALITY = 5
+QUALITY_CHOICES = {2, 5, 10, 20}
+RESOLUTION_CHOICES = {"", "1280x720", "854x480", "640x360"}
+
+
+def validate_quality(quality) -> int:
+    quality = int(quality) if quality else DEFAULT_QUALITY
+
+    if quality not in QUALITY_CHOICES:
+        raise ValueError(f"Invalid quality: {quality}")
+
+    return quality
+
+
+def validate_resolution(resolution: str) -> str:
+    resolution = (resolution or "").strip()
+
+    if resolution not in RESOLUTION_CHOICES:
+        raise ValueError(f"Invalid resolution: {resolution}")
+
+    return resolution
+
+
+def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = "/1/1",
+                quality=DEFAULT_QUALITY, resolution: str = ""):
     camera_id = validate_camera_id(camera_id)
     name = (name or "").strip()
     ip = (ip or "").strip()
+    quality = validate_quality(quality)
+    resolution = validate_resolution(resolution)
 
     if not name:
         raise ValueError("Name is required")
@@ -100,6 +129,8 @@ def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = 
         "ip": ip,
         "port": int(port) if port else 554,
         "path": (path or "/1/1").strip() or "/1/1",
+        "quality": quality,
+        "resolution": resolution,
     }
 
     hosts.append(host)
@@ -108,7 +139,8 @@ def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = 
     return host
 
 
-def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, path: str = None):
+def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, path: str = None,
+                   quality=None, resolution: str = None):
     hosts = get_hosts()
 
     for host in hosts:
@@ -123,8 +155,18 @@ def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, p
             host["port"] = int(port)
         if path and path.strip():
             host["path"] = path.strip()
+        if quality:
+            host["quality"] = validate_quality(quality)
+        if resolution is not None:
+            host["resolution"] = validate_resolution(resolution)
 
         _save_hosts(hosts)
+
+        with _streams_lock:
+            stream = _streams.pop(camera_id, None)
+            if stream is not None:
+                _stop_stream(stream)
+
         return host
 
     raise ValueError(f"Unknown camera: {camera_id}")
@@ -228,17 +270,25 @@ def _start_stream(camera_id):
     LIVE_DIR.mkdir(parents=True, exist_ok=True)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+    quality = validate_quality(host.get("quality", DEFAULT_QUALITY))
+    resolution = host.get("resolution", "")
+
+    ffmpeg_args = [
+        "ffmpeg", "-y",
+        "-rtsp_transport", "tcp",
+        "-timeout", "5000000",
+        "-i", build_rtsp_url(host),
+        "-r", str(FRAME_RATE),
+        "-q:v", str(quality),
+    ]
+
+    if resolution:
+        ffmpeg_args += ["-vf", f"scale={resolution.replace('x', ':')}"]
+
+    ffmpeg_args += ["-f", "mjpeg", "-"]
+
     stream.process = subprocess.Popen(
-        [
-            "ffmpeg", "-y",
-            "-rtsp_transport", "tcp",
-            "-timeout", "5000000",
-            "-i", build_rtsp_url(host),
-            "-r", str(FRAME_RATE),
-            "-q:v", "5",
-            "-f", "mjpeg",
-            "-",
-        ],
+        ffmpeg_args,
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
     )
