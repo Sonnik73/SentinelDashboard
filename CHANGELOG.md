@@ -4,6 +4,18 @@
 
 ---
 
+## v2.8.4
+
+### Added
+- Per-camera frame rate: `fps` is now a plain number input (1-10) per camera in Settings, instead of one global rate for every camera (`DEFAULT_FPS = 2` if a camera doesn't set one, `MIN_FPS`/`MAX_FPS` bound the valid range). `modules/cameras/service.py`'s `_start_stream()` passes each camera's own `fps` to ffmpeg's `-r`. Editing fps on an existing camera restarts its stream immediately, same as quality/resolution
+- `modules/cameras/widget.js` rewritten around this: each camera instance gets its own `setInterval` computed from its actual fps (`1000 / fps` ms) instead of one shared interval for every camera, so two cameras can genuinely refresh at different rates on the same page. The loop only restarts when a camera's fps actually changes (tracked per instance), so the routine ~10s status poll doesn't hiccup a camera's frame cadence on every tick
+- `/api/cameras` now includes each camera's `fps` so the frontend can read it
+
+### Verification
+- Captured the real `subprocess.Popen` args against a synthetic source and confirmed ffmpeg received `-r <configured fps>`. In a real browser with two cameras configured at fps=2 and fps=5, sampled each camera's `<img src>` over a 2s window: ~4 distinct frames for the fps=2 camera, ~11 for the fps=5 one — matching their independently configured rates on the same page
+
+---
+
 ## v2.8.3
 
 ### Added
