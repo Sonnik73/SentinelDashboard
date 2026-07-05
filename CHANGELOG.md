@@ -4,6 +4,17 @@
 
 ---
 
+## v2.8.5
+
+### Added
+- Fullscreen Swipe: while a widget is fullscreen, swiping left/right jumps to the next/previous widget in the current view (wraps from last back to first and vice versa). `static/js/ui.js`'s `swipeToWidget()` calls `requestFullscreen()` directly on the target cell rather than exiting first - switching the fullscreen element directly is supported by modern browsers and avoids the "no longer a direct user gesture" pitfall of an async exit-then-request-again sequence
+- Guards against a vertical-dominant touch move (e.g. scrolling a widget's own long content, like a news list) being misread as a swipe - only a horizontal move past a 60px threshold that's also larger than the vertical component counts
+
+### Verification
+- Verified with synthetic touch events in a `has_touch` Playwright context: a move below the threshold leaves fullscreen unchanged, swipe left/right correctly navigate next/previous, wraps around at both ends, and a vertical-dominant move doesn't trigger navigation
+
+---
+
 ## v2.8.4
 
 ### Added
