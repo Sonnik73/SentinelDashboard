@@ -22,7 +22,7 @@ python tools/check.py
 
 Если сервер не запущен, проверка API пропускается с пометкой `[WARN]`, это не считается ошибкой. Автоматических тестов (pytest/unittest) в проекте нет — `tools/check.py` единственный инструмент валидации.
 
-**Важно:** в README/INSTALL упоминается `pip install -r requirements.txt`, но самого файла `requirements.txt` в репозитории сейчас нет. Зависимости среды выполнения, определённые по импортам: `fastapi`, `uvicorn`, `jinja2`, `psutil`, `httpx`, `feedparser`.
+Зависимости среды выполнения зафиксированы в `requirements.txt`: `fastapi`, `uvicorn`, `jinja2`, `psutil`, `httpx`, `feedparser`.
 
 ## Архитектура
 
