@@ -22,7 +22,9 @@ def get_hosts():
 # runs continuously, streaming MJPEG to stdout; a background thread splits
 # it into frames and writes each one atomically (temp file + rename) so a
 # concurrent HTTP reader never sees a torn/partial JPEG.
-FRAME_RATE = 2
+DEFAULT_FPS = 2              # used for a camera with no explicit fps set
+MIN_FPS = 1
+MAX_FPS = 10                 # real Pi hardware couldn't sustain 3, see CHANGELOG v2.8.2
 STARTUP_TIMEOUT = 8          # max wait for a fresh stream's first frame
 STALE_AFTER = 5              # seconds without a new frame before restarting
 STATUS_WRITE_INTERVAL = 2    # throttle status + last-known-good writes
@@ -104,13 +106,23 @@ def validate_resolution(resolution: str) -> str:
     return resolution
 
 
+def validate_fps(fps) -> int:
+    fps = int(fps) if fps else DEFAULT_FPS
+
+    if not (MIN_FPS <= fps <= MAX_FPS):
+        raise ValueError(f"fps must be between {MIN_FPS} and {MAX_FPS}")
+
+    return fps
+
+
 def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = "/1/1",
-                quality=DEFAULT_QUALITY, resolution: str = ""):
+                quality=DEFAULT_QUALITY, resolution: str = "", fps=DEFAULT_FPS):
     camera_id = validate_camera_id(camera_id)
     name = (name or "").strip()
     ip = (ip or "").strip()
     quality = validate_quality(quality)
     resolution = validate_resolution(resolution)
+    fps = validate_fps(fps)
 
     if not name:
         raise ValueError("Name is required")
@@ -131,6 +143,7 @@ def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = 
         "path": (path or "/1/1").strip() or "/1/1",
         "quality": quality,
         "resolution": resolution,
+        "fps": fps,
     }
 
     hosts.append(host)
@@ -140,7 +153,7 @@ def add_camera(camera_id: str, name: str, ip: str, port: int = 554, path: str = 
 
 
 def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, path: str = None,
-                   quality=None, resolution: str = None):
+                   quality=None, resolution: str = None, fps=None):
     hosts = get_hosts()
 
     for host in hosts:
@@ -159,6 +172,8 @@ def update_camera(camera_id: str, name: str = None, ip: str = None, port=None, p
             host["quality"] = validate_quality(quality)
         if resolution is not None:
             host["resolution"] = validate_resolution(resolution)
+        if fps:
+            host["fps"] = validate_fps(fps)
 
         _save_hosts(hosts)
 
@@ -272,13 +287,14 @@ def _start_stream(camera_id):
 
     quality = validate_quality(host.get("quality", DEFAULT_QUALITY))
     resolution = host.get("resolution", "")
+    fps = validate_fps(host.get("fps", DEFAULT_FPS))
 
     ffmpeg_args = [
         "ffmpeg", "-y",
         "-rtsp_transport", "tcp",
         "-timeout", "5000000",
         "-i", build_rtsp_url(host),
-        "-r", str(FRAME_RATE),
+        "-r", str(fps),
         "-q:v", str(quality),
     ]
 
@@ -379,6 +395,7 @@ def get_cameras_status():
         cameras.append({
             "id": host["id"],
             "name": host["name"],
+            "fps": host.get("fps", DEFAULT_FPS),
             "source": status.get("source", "error"),
             "last_sync": status.get("last_sync"),
             "error": status.get("error"),

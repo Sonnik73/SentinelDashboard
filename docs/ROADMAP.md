@@ -29,7 +29,7 @@
 - Delete View
 - Import / Export Views
 - Drag & Drop Layout Editor (mouse only — see Roadmap's Layout section for touch/tablet support)
-- Cameras Widget (live feed from RTSP via a persistent `ffmpeg` process, `FRAME_RATE` configurable in `modules/cameras/service.py` — default 2 fps, lowered from 3 after real Pi hardware couldn't sustain it, see `docs/MODULES.md`; RTSP path convention not yet verified against real hardware)
+- Cameras Widget (live feed from RTSP via a persistent `ffmpeg` process, per-camera `fps` editable in Settings — default 2, range 1-10, lowered from an initial global 3 after real Pi hardware couldn't sustain it, see `docs/MODULES.md`; RTSP path convention not yet verified against real hardware)
 - Camera Config UI (add/edit/delete cameras from Settings instead of hand-editing `config/dashboard.json`, picked up live with no server restart)
 - Wall Mode — already satisfied by an ordinary view (`config/views/wall.json` is a working example); no dedicated kiosk mode was needed beyond the existing View system
 - Widget Resize — already satisfied by the span dropdown in the Settings widget checklist; no separate drag-resize handle was needed

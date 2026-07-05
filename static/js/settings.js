@@ -175,6 +175,7 @@ async function loadCamerasConfig() {
         data.cameras.forEach(camera => {
             const resolution = camera.resolution ?? "";
             const quality = camera.quality ?? 5;
+            const fps = camera.fps ?? 2;
 
             const item = document.createElement("div");
             item.className = "camera-config-item";
@@ -196,6 +197,7 @@ async function loadCamerasConfig() {
                     <option value="10" ${quality === 10 ? "selected" : ""}>Качество: низкое</option>
                     <option value="20" ${quality === 20 ? "selected" : ""}>Качество: минимальное</option>
                 </select>
+                <input type="number" class="settings-view-select camera-config-fps" value="${fps}" min="1" max="10" placeholder="Кадров/сек">
                 <div class="settings-view-manage-row">
                     <button class="settings-action-button camera-config-save">💾 Сохранить</button>
                     <button class="settings-action-button camera-config-delete">🗑 Удалить</button>
@@ -217,6 +219,7 @@ async function loadCamerasConfig() {
                         path: item.querySelector(".camera-config-path").value,
                         resolution: item.querySelector(".camera-config-resolution").value,
                         quality: item.querySelector(".camera-config-quality").value,
+                        fps: item.querySelector(".camera-config-fps").value,
                     });
 
                     button.textContent = "✅ Сохранено";
@@ -266,6 +269,7 @@ function initCameraConfigActions() {
         const pathInput = document.getElementById("camera-config-path");
         const resolutionInput = document.getElementById("camera-config-resolution");
         const qualityInput = document.getElementById("camera-config-quality");
+        const fpsInput = document.getElementById("camera-config-fps");
 
         const id = idInput.value.trim();
         const name = nameInput.value.trim();
@@ -288,6 +292,7 @@ function initCameraConfigActions() {
                 path: pathInput.value.trim(),
                 resolution: resolutionInput.value,
                 quality: qualityInput.value,
+                fps: fpsInput.value.trim(),
             });
 
             [idInput, nameInput, ipInput, portInput, pathInput].forEach(input => {

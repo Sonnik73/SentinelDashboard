@@ -123,6 +123,8 @@
                 <option value="20">Качество: минимальное</option>
             </select>
 
+            <input type="number" id="camera-config-fps" class="settings-view-select" placeholder="Кадров/сек (по умолчанию 2)" min="1" max="10" value="2">
+
             <button id="add-camera-config" class="settings-action-button">
                 ➕ Добавить камеру
             </button>
@@ -221,7 +223,7 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=9"></script>
+<script src="/static/js/settings.js?v=10"></script>
 <script src="/static/js/app.js?v=32"></script>
 
 <footer class="footer">
