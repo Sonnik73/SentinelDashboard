@@ -4,6 +4,16 @@
 
 ---
 
+## v2.8.2
+
+### Changed
+- Camera frame rate lowered from ~3 fps to ~2 fps (`FRAME_RATE` in `modules/cameras/service.py`) — the real Raspberry Pi couldn't sustain 3 fps. `modules/cameras/widget.js`'s `CAMERA_FRAME_INTERVAL_MS` kept in sync (500ms, matching `1000 / FRAME_RATE`) so the frontend doesn't poll faster than frames actually arrive
+
+### Fixed
+- Found while testing the frame rate change on a clean checkout: `_read_frames`'s throttled snapshot write (`data/camera_<id>.jpg`) never ensured `data/` existed first, unlike the live tmpfs file. On a fresh clone with no `data/` directory yet (nothing else had triggered `core/cache.py`'s `save_cache()`, which does create it), the first throttled write raised `FileNotFoundError`, silently killing the frame-reading background thread — the live stream would just stop advancing with no obvious error. Fixed by creating `CACHE_DIR` alongside `LIVE_DIR` in `_start_stream()`. Verified end-to-end from a directory with `data/` freshly removed: 60/60 clean frames through the real `ensure_stream()` path, where it previously failed 100% of the time
+
+---
+
 ## v2.8.1
 
 ### Added
