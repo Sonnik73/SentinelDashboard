@@ -4,6 +4,17 @@
 
 ---
 
+## v2.8.9
+
+### Added
+- Birthday entries can now be added, edited, and removed from the Settings drawer ("Дни рождения" section) instead of hand-editing `data/birthdays.json` — same pattern as cameras, RSS, weather, and network. Backed by new `GET /api/birthdays/config` and `POST /api/birthdays/config/add` / `.../update` / `.../delete` in `modules/birthdays/api.py`
+- `modules/birthdays/service.py` gains `save_birthdays()`, which writes straight to `data/birthdays.json` (creating the file and `data/` directory on first save — there was previously no writer at all, only `load_birthdays()`), and `add_birthday()` / `update_birthday()` / `delete_birthday()`, mirroring weather/rss/network's CRUD helpers. `validate_birthday()` rejects a `date` that isn't `MM-DD` with a 400 instead of silently accepting garbage that would later show up as an `error` entry on `/api/birthdays`. An entry has no separate `id` - identified by its (unique) `name`
+
+### Verification
+- Full add/rename/delete round trip verified via API (including a rejected malformed date) and through the Settings UI in a browser; confirmed `data/birthdays.json` is created on first add and reflects each change
+
+---
+
 ## v2.8.8
 
 ### Added
