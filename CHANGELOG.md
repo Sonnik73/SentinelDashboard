@@ -4,6 +4,18 @@
 
 ---
 
+## v2.8.8
+
+### Added
+- Network ping hosts can now be added, edited, and removed from the Settings drawer ("Хосты для пинга" section) instead of hand-editing `config/dashboard.json` — same pattern as cameras, RSS, and weather. Backed by new `GET /api/network/config` and `POST /api/network/config/add` / `.../update` / `.../delete` in `modules/network/api.py`
+- `modules/network/service.py`'s `get_hosts()` reads `config/dashboard.json` fresh on every call instead of caching it at import time (it previously cached the whole `network` section into a module-level `NETWORK_CONFIG` at import), so a host added through the UI is picked up on the next refresh with no server restart. A host has no separate `id` - identified by its (unique) `name`, same as weather cities/RSS feeds
+- `_save_hosts()` merges into the existing `network` section rather than replacing it outright, applying the read-merge-write fix from v2.8.7 from the start rather than retrofitting it later
+
+### Verification
+- Full add/rename/delete round trip verified via API and through the Settings UI in a browser; `config/dashboard.json` diffed byte-for-byte against a pre-test backup afterward with no drift
+
+---
+
 ## v2.8.7
 
 ### Added
