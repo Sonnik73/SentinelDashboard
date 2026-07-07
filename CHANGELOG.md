@@ -4,6 +4,20 @@
 
 ---
 
+## v2.8.7
+
+### Added
+- Weather cities can now be added, edited, and removed from the Settings drawer ("Города погоды" section) instead of hand-editing `config/dashboard.json` — same pattern as cameras (v2.7.0) and RSS (v2.7.7). Backed by new `GET /api/weather/config` and `POST /api/weather/config/add` / `.../update` / `.../delete` in `modules/weather/api.py`
+- `modules/weather/service.py`'s `get_cities()` reads `config/dashboard.json` fresh on every call instead of caching it at import time, so a city added through the UI is picked up on the next refresh with no server restart. A city has no separate `id` - identified by its (unique) `name`, same as RSS feeds
+
+### Fixed
+- Found while testing this: `_save_cities()`/`_save_hosts()`/`_save_feeds()` (weather, cameras, rss) all replaced their entire config section outright (`update_section("weather", {"cities": cities})`) instead of merging into it. Weather's section also carries a `provider` key, which a save from the UI was silently wiping - confirmed by diffing `config/dashboard.json` before/after a save. Cameras and RSS don't currently have any extra keys in their sections, so they weren't hit by this in practice, but were fixed the same way (read the current section, update just the one list key, write the merged result back) since the same bug was clearly waiting to happen there too
+
+### Verification
+- Full add/rename/delete round trip verified via API and through the Settings UI in a browser; confirmed `config/dashboard.json`'s `weather.provider` key survives a city add+delete cycle after the fix (it didn't before)
+
+---
+
 ## v2.8.6
 
 ### Added
