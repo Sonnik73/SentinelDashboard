@@ -2,11 +2,78 @@ import re
 import socket
 import subprocess
 
-from core.config import get_section
+from core.config import get_section, update_section
 from core.time import now_string
 
 
-NETWORK_CONFIG = get_section("network")
+# Read fresh from config/dashboard.json on every call rather than caching
+# at import time, so a host added/edited/removed through Settings takes
+# effect on the next refresh - no server restart needed (same reasoning
+# as modules/cameras/service.py's get_hosts()).
+def get_hosts():
+    return get_section("network").get("hosts", [])
+
+
+def _save_hosts(hosts: list):
+    # Merge into the existing section rather than replacing it outright -
+    # see modules/weather/service.py's _save_cities() for why (a blind
+    # overwrite silently drops any sibling key the section might carry).
+    section = get_section("network")
+    section["hosts"] = hosts
+    update_section("network", section)
+
+
+def validate_host(name: str, address: str) -> tuple[str, str]:
+    name = (name or "").strip()
+    address = (address or "").strip()
+
+    if not name:
+        raise ValueError("Name is required")
+
+    if not address:
+        raise ValueError("Address is required")
+
+    return name, address
+
+
+def add_host(name: str, address: str):
+    name, address = validate_host(name, address)
+    hosts = get_hosts()
+
+    if any(host["name"] == name for host in hosts):
+        raise ValueError(f"Host already exists: {name}")
+
+    host = {"name": name, "address": address}
+    hosts.append(host)
+    _save_hosts(hosts)
+
+    return host
+
+
+def update_host(name: str, new_name: str, new_address: str):
+    new_name, new_address = validate_host(new_name, new_address)
+    hosts = get_hosts()
+
+    for host in hosts:
+        if host["name"] != name:
+            continue
+
+        host["name"] = new_name
+        host["address"] = new_address
+        _save_hosts(hosts)
+        return host
+
+    raise ValueError(f"Unknown host: {name}")
+
+
+def delete_host(name: str):
+    hosts = get_hosts()
+    remaining = [host for host in hosts if host["name"] != name]
+
+    if len(remaining) == len(hosts):
+        raise ValueError(f"Unknown host: {name}")
+
+    _save_hosts(remaining)
 
 
 def ping_host(address: str):
@@ -81,7 +148,7 @@ def detect_interface():
 def get_network_status():
     hosts = []
 
-    for host in NETWORK_CONFIG.get("hosts", []):
+    for host in get_hosts():
         address = host["address"]
         ping_result = ping_host(address)
 

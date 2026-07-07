@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initCameraConfigActions();
     initRssConfigActions();
     initWeatherConfigActions();
+    initNetworkConfigActions();
     initDragAndDrop();
     initFullscreenToggles();
     initFullscreenSwipe();

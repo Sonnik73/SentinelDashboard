@@ -36,6 +36,7 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 ### network
 
 - Pings each host listed in `config/dashboard.json` under `network.hosts`, and detects the active interface (Wi-Fi / Ethernet) and local IP
+- Hosts can also be added/edited/removed from the Settings drawer ("Хосты для пинга" section) instead of hand-editing the JSON: `GET /api/network/config` lists them, `POST /api/network/config/add` / `.../update` / `.../delete` manage them, same pattern as cameras/RSS/weather. `get_hosts()` reads fresh from `config/dashboard.json` on every call, so a host added through the UI is picked up on the next refresh with no server restart. A host has no separate `id`; it's identified by its (unique) `name`
 - Endpoint: `GET /api/network`
 - Shells out to `ping` and `ip route` — both must be available in `PATH`
 

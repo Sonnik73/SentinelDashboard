@@ -540,6 +540,120 @@ function initWeatherConfigActions() {
 }
 
 
+// ------------------------------
+// Network Hosts Config
+// ------------------------------
+
+async function loadNetworkConfig() {
+    const container = document.getElementById("network-config-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/network/config");
+        container.innerHTML = "";
+
+        if (!data.hosts || data.hosts.length === 0) {
+            container.innerHTML = `<p class="small">Хосты не настроены</p>`;
+            return;
+        }
+
+        data.hosts.forEach(host => {
+            const item = document.createElement("div");
+            item.className = "weather-config-item";
+            item.dataset.hostName = host.name;
+            item.innerHTML = `
+                <input type="text" class="settings-view-select network-config-name" value="${host.name}" placeholder="Название">
+                <input type="text" class="settings-view-select network-config-address" value="${host.address}" placeholder="IP-адрес или домен">
+                <div class="settings-view-manage-row">
+                    <button class="settings-action-button network-config-save">💾 Сохранить</button>
+                    <button class="settings-action-button network-config-delete">🗑 Удалить</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        container.querySelectorAll(".network-config-save").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+
+                try {
+                    await postJson("/api/network/config/update", {
+                        name: item.dataset.hostName,
+                        new_name: item.querySelector(".network-config-name").value,
+                        new_address: item.querySelector(".network-config-address").value,
+                    });
+
+                    button.textContent = "✅ Сохранено";
+                    setTimeout(() => { button.textContent = "💾 Сохранить"; }, 1500);
+
+                    loadNetworkConfig();
+                } catch (error) {
+                    window.alert(`Не удалось сохранить хост: ${error.message}`);
+                }
+            });
+        });
+
+        container.querySelectorAll(".network-config-delete").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+                const hostName = item.dataset.hostName;
+
+                const confirmed = window.confirm(`Удалить хост "${hostName}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await postJson("/api/network/config/delete", { name: hostName });
+                    loadNetworkConfig();
+                } catch (error) {
+                    window.alert(`Не удалось удалить хост: ${error.message}`);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Network config:", error);
+    }
+}
+
+function initNetworkConfigActions() {
+    const addButton = document.getElementById("add-network-config");
+    const state = document.getElementById("network-config-state");
+
+    if (!addButton || !state) return;
+
+    addButton.addEventListener("click", async () => {
+        const nameInput = document.getElementById("network-config-name");
+        const addressInput = document.getElementById("network-config-address");
+
+        const name = nameInput.value.trim();
+        const address = addressInput.value.trim();
+
+        if (!name || !address) {
+            state.textContent = "⚠️ Заполните название и адрес";
+            return;
+        }
+
+        addButton.disabled = true;
+        state.textContent = "⏳ Добавление...";
+
+        try {
+            await postJson("/api/network/config/add", { name, address });
+
+            nameInput.value = "";
+            addressInput.value = "";
+
+            state.textContent = "✅ Хост добавлен";
+
+            loadNetworkConfig();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            addButton.disabled = false;
+        }
+    });
+}
+
+
 function initSettingsDrawer() {
     const button = document.getElementById("settings-button");
     const close = document.getElementById("settings-close");
@@ -555,6 +669,7 @@ function initSettingsDrawer() {
         loadCamerasConfig();
         loadRssConfig();
         loadWeatherConfig();
+        loadNetworkConfig();
         setLayoutCellsDraggable(true);
     }
 

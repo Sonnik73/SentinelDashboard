@@ -171,6 +171,25 @@
         <p id="weather-config-state" class="small"></p>
     </div>
 
+    <div class="settings-section">
+        <p class="small">Хосты для пинга</p>
+
+        <div id="network-config-list">
+            <p class="small">Загрузка...</p>
+        </div>
+
+        <div class="weather-config-form">
+            <input type="text" id="network-config-name" class="settings-view-select" placeholder="Название (например Роутер)">
+            <input type="text" id="network-config-address" class="settings-view-select" placeholder="IP-адрес или домен">
+
+            <button id="add-network-config" class="settings-action-button">
+                ➕ Добавить хост
+            </button>
+        </div>
+
+        <p id="network-config-state" class="small"></p>
+    </div>
+
     <div class="settings-section settings-actions">
         <button id="generate-view-link" class="settings-action-button">
             🔗 Поделиться представлением
@@ -242,8 +261,8 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=11"></script>
-<script src="/static/js/app.js?v=34"></script>
+<script src="/static/js/settings.js?v=12"></script>
+<script src="/static/js/app.js?v=35"></script>
 
 <footer class="footer">
     <div>
