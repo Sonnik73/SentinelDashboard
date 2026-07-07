@@ -14,7 +14,13 @@ def get_feeds():
 
 
 def _save_feeds(feeds: list):
-    update_section("rss", {"feeds": feeds})
+    # Merge into the existing section rather than replacing it outright,
+    # in case "rss" ever grows another key besides "feeds" - a blind
+    # overwrite would silently drop it (see modules/weather/service.py's
+    # _save_cities(), which actually hit this with a real "provider" key).
+    section = get_section("rss")
+    section["feeds"] = feeds
+    update_section("rss", section)
 
 
 def validate_feed(name: str, url: str) -> tuple[str, str]:

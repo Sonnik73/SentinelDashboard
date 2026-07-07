@@ -11,7 +11,7 @@
         // the interactive toggle.
         document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark";
     </script>
-    <link rel="stylesheet" href="/static/css/style.css?v=25">
+    <link rel="stylesheet" href="/static/css/style.css?v=26">
 </head>
 
 <body>
@@ -152,6 +152,25 @@
         <p id="rss-config-state" class="small"></p>
     </div>
 
+    <div class="settings-section">
+        <p class="small">Города погоды</p>
+
+        <div id="weather-config-list">
+            <p class="small">Загрузка...</p>
+        </div>
+
+        <div class="weather-config-form">
+            <input type="text" id="weather-config-name" class="settings-view-select" placeholder="Название (например Москва)">
+            <input type="text" id="weather-config-url" class="settings-view-select" placeholder="URL страницы rp5.ru">
+
+            <button id="add-weather-config" class="settings-action-button">
+                ➕ Добавить город
+            </button>
+        </div>
+
+        <p id="weather-config-state" class="small"></p>
+    </div>
+
     <div class="settings-section settings-actions">
         <button id="generate-view-link" class="settings-action-button">
             🔗 Поделиться представлением
@@ -223,8 +242,8 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=10"></script>
-<script src="/static/js/app.js?v=33"></script>
+<script src="/static/js/settings.js?v=11"></script>
+<script src="/static/js/app.js?v=34"></script>
 
 <footer class="footer">
     <div>

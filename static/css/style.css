@@ -486,6 +486,17 @@ body {
     margin-top: 14px;
 }
 
+.weather-config-item {
+    border: 1px solid var(--config-item-border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.weather-config-form {
+    margin-top: 14px;
+}
+
 /* ------------------------------
    Responsive Layout
    ------------------------------

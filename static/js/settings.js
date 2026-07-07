@@ -426,6 +426,120 @@ function initRssConfigActions() {
 }
 
 
+// ------------------------------
+// Weather Cities Config
+// ------------------------------
+
+async function loadWeatherConfig() {
+    const container = document.getElementById("weather-config-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/weather/config");
+        container.innerHTML = "";
+
+        if (!data.cities || data.cities.length === 0) {
+            container.innerHTML = `<p class="small">Города не настроены</p>`;
+            return;
+        }
+
+        data.cities.forEach(city => {
+            const item = document.createElement("div");
+            item.className = "weather-config-item";
+            item.dataset.cityName = city.name;
+            item.innerHTML = `
+                <input type="text" class="settings-view-select weather-config-name" value="${city.name}" placeholder="Название">
+                <input type="text" class="settings-view-select weather-config-url" value="${city.url}" placeholder="URL страницы rp5.ru">
+                <div class="settings-view-manage-row">
+                    <button class="settings-action-button weather-config-save">💾 Сохранить</button>
+                    <button class="settings-action-button weather-config-delete">🗑 Удалить</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        container.querySelectorAll(".weather-config-save").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+
+                try {
+                    await postJson("/api/weather/config/update", {
+                        name: item.dataset.cityName,
+                        new_name: item.querySelector(".weather-config-name").value,
+                        new_url: item.querySelector(".weather-config-url").value,
+                    });
+
+                    button.textContent = "✅ Сохранено";
+                    setTimeout(() => { button.textContent = "💾 Сохранить"; }, 1500);
+
+                    loadWeatherConfig();
+                } catch (error) {
+                    window.alert(`Не удалось сохранить город: ${error.message}`);
+                }
+            });
+        });
+
+        container.querySelectorAll(".weather-config-delete").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+                const cityName = item.dataset.cityName;
+
+                const confirmed = window.confirm(`Удалить город "${cityName}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await postJson("/api/weather/config/delete", { name: cityName });
+                    loadWeatherConfig();
+                } catch (error) {
+                    window.alert(`Не удалось удалить город: ${error.message}`);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Weather config:", error);
+    }
+}
+
+function initWeatherConfigActions() {
+    const addButton = document.getElementById("add-weather-config");
+    const state = document.getElementById("weather-config-state");
+
+    if (!addButton || !state) return;
+
+    addButton.addEventListener("click", async () => {
+        const nameInput = document.getElementById("weather-config-name");
+        const urlInput = document.getElementById("weather-config-url");
+
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+
+        if (!name || !url) {
+            state.textContent = "⚠️ Заполните название и URL";
+            return;
+        }
+
+        addButton.disabled = true;
+        state.textContent = "⏳ Добавление...";
+
+        try {
+            await postJson("/api/weather/config/add", { name, url });
+
+            nameInput.value = "";
+            urlInput.value = "";
+
+            state.textContent = "✅ Город добавлен";
+
+            loadWeatherConfig();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            addButton.disabled = false;
+        }
+    });
+}
+
+
 function initSettingsDrawer() {
     const button = document.getElementById("settings-button");
     const close = document.getElementById("settings-close");
@@ -440,6 +554,7 @@ function initSettingsDrawer() {
         loadSettingsDrawer();
         loadCamerasConfig();
         loadRssConfig();
+        loadWeatherConfig();
         setLayoutCellsDraggable(true);
     }
 

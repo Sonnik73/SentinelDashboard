@@ -4,11 +4,78 @@ from datetime import datetime
 import httpx
 
 from core.cache import load_cache, save_cache
-from core.config import get_section
+from core.config import get_section, update_section
 from core.time import now, now_string, DEFAULT_TIME_FORMAT
 
-WEATHER_CONFIG = get_section("weather")
-CITIES = WEATHER_CONFIG["cities"]
+# Read fresh from config/dashboard.json on every call rather than caching
+# at import time, so a city added/edited/removed through Settings takes
+# effect on the next refresh - no server restart needed (same reasoning
+# as modules/cameras/service.py's get_hosts()).
+def get_cities():
+    return get_section("weather").get("cities", [])
+
+
+def _save_cities(cities: list):
+    # Merge into the existing section rather than replacing it outright -
+    # "weather" also carries a "provider" key that a blind overwrite would
+    # silently drop (found by diffing config/dashboard.json before/after
+    # a save during testing).
+    section = get_section("weather")
+    section["cities"] = cities
+    update_section("weather", section)
+
+
+def validate_city(name: str, url: str) -> tuple[str, str]:
+    name = (name or "").strip()
+    url = (url or "").strip()
+
+    if not name:
+        raise ValueError("Name is required")
+
+    if not url:
+        raise ValueError("URL is required")
+
+    return name, url
+
+
+def add_city(name: str, url: str):
+    name, url = validate_city(name, url)
+    cities = get_cities()
+
+    if any(city["name"] == name for city in cities):
+        raise ValueError(f"City already exists: {name}")
+
+    city = {"name": name, "url": url}
+    cities.append(city)
+    _save_cities(cities)
+
+    return city
+
+
+def update_city(name: str, new_name: str, new_url: str):
+    new_name, new_url = validate_city(new_name, new_url)
+    cities = get_cities()
+
+    for city in cities:
+        if city["name"] != name:
+            continue
+
+        city["name"] = new_name
+        city["url"] = new_url
+        _save_cities(cities)
+        return city
+
+    raise ValueError(f"Unknown city: {name}")
+
+
+def delete_city(name: str):
+    cities = get_cities()
+    remaining = [city for city in cities if city["name"] != name]
+
+    if len(remaining) == len(cities):
+        raise ValueError(f"Unknown city: {name}")
+
+    _save_cities(remaining)
 
 # rp5.ru has no documented API and no request quota, but scraping it is a
 # fragile dependency on undocumented page structure - keep the request rate
@@ -91,7 +158,7 @@ def get_weather():
         weather_data = {
             "source": "online",
             "last_sync": now_string(),
-            "cities": [fetch_city_weather(city) for city in CITIES],
+            "cities": [fetch_city_weather(city) for city in get_cities()],
         }
 
         save_cache("weather", weather_data)

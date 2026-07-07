@@ -77,7 +77,13 @@ def validate_camera_id(camera_id: str) -> str:
 
 
 def _save_hosts(hosts: list):
-    update_section("cameras", {"hosts": hosts})
+    # Merge into the existing section rather than replacing it outright,
+    # in case "cameras" ever grows another key besides "hosts" - a blind
+    # overwrite would silently drop it (see modules/weather/service.py's
+    # _save_cities(), which actually hit this with a real "provider" key).
+    section = get_section("cameras")
+    section["hosts"] = hosts
+    update_section("cameras", section)
 
 
 # JPEG quality passed to ffmpeg's -q:v (2 = best/largest, 31 = worst/
