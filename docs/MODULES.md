@@ -43,6 +43,7 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 ### birthdays
 
 - Data source: the local file `data/birthdays.json` — nothing is fetched externally
+- Entries can also be added/edited/removed from the Settings drawer ("Дни рождения" section) instead of hand-editing the JSON: `GET /api/birthdays/config` lists them, `POST /api/birthdays/config/add` / `.../update` / `.../delete` manage them, same pattern as cameras/RSS/weather/network. Unlike those modules this isn't a `config/dashboard.json` section — `modules/birthdays/service.py`'s `save_birthdays()` writes straight to `data/birthdays.json`, creating the file (and `data/` if missing) on first save. `date` must be `MM-DD`; add/update reject anything else with a 400. An entry has no separate `id`; it's identified by its (unique) `name`
 - Endpoint: `GET /api/birthdays`
 - Computes days remaining until each birthday and sorts by proximity
 - Entries with an unparseable `date` field are still returned, flagged with an `error` field instead of being dropped

@@ -190,6 +190,26 @@
         <p id="network-config-state" class="small"></p>
     </div>
 
+    <div class="settings-section">
+        <p class="small">Дни рождения</p>
+
+        <div id="birthdays-config-list">
+            <p class="small">Загрузка...</p>
+        </div>
+
+        <div class="weather-config-form">
+            <input type="text" id="birthdays-config-name" class="settings-view-select" placeholder="Имя">
+            <input type="text" id="birthdays-config-date" class="settings-view-select" placeholder="Дата в формате MM-DD">
+            <input type="text" id="birthdays-config-note" class="settings-view-select" placeholder="Заметка (необязательно)">
+
+            <button id="add-birthdays-config" class="settings-action-button">
+                ➕ Добавить запись
+            </button>
+        </div>
+
+        <p id="birthdays-config-state" class="small"></p>
+    </div>
+
     <div class="settings-section settings-actions">
         <button id="generate-view-link" class="settings-action-button">
             🔗 Поделиться представлением
@@ -261,8 +281,8 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=12"></script>
-<script src="/static/js/app.js?v=35"></script>
+<script src="/static/js/settings.js?v=13"></script>
+<script src="/static/js/app.js?v=36"></script>
 
 <footer class="footer">
     <div>

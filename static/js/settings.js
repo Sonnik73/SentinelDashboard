@@ -654,6 +654,125 @@ function initNetworkConfigActions() {
 }
 
 
+// ------------------------------
+// Birthdays Config
+// ------------------------------
+
+async function loadBirthdaysConfig() {
+    const container = document.getElementById("birthdays-config-list");
+    if (!container) return;
+
+    try {
+        const data = await apiGet("/api/birthdays/config");
+        container.innerHTML = "";
+
+        if (!data.items || data.items.length === 0) {
+            container.innerHTML = `<p class="small">Дни рождения не настроены</p>`;
+            return;
+        }
+
+        data.items.forEach(item => {
+            const el = document.createElement("div");
+            el.className = "weather-config-item";
+            el.dataset.itemName = item.name;
+            el.innerHTML = `
+                <input type="text" class="settings-view-select birthdays-config-name" value="${item.name}" placeholder="Имя">
+                <input type="text" class="settings-view-select birthdays-config-date" value="${item.date}" placeholder="MM-DD">
+                <input type="text" class="settings-view-select birthdays-config-note" value="${item.note || ""}" placeholder="Заметка (необязательно)">
+                <div class="settings-view-manage-row">
+                    <button class="settings-action-button birthdays-config-save">💾 Сохранить</button>
+                    <button class="settings-action-button birthdays-config-delete">🗑 Удалить</button>
+                </div>
+            `;
+            container.appendChild(el);
+        });
+
+        container.querySelectorAll(".birthdays-config-save").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+
+                try {
+                    await postJson("/api/birthdays/config/update", {
+                        name: item.dataset.itemName,
+                        new_name: item.querySelector(".birthdays-config-name").value,
+                        new_date: item.querySelector(".birthdays-config-date").value,
+                        new_note: item.querySelector(".birthdays-config-note").value,
+                    });
+
+                    button.textContent = "✅ Сохранено";
+                    setTimeout(() => { button.textContent = "💾 Сохранить"; }, 1500);
+
+                    loadBirthdaysConfig();
+                } catch (error) {
+                    window.alert(`Не удалось сохранить запись: ${error.message}`);
+                }
+            });
+        });
+
+        container.querySelectorAll(".birthdays-config-delete").forEach(button => {
+            button.addEventListener("click", async () => {
+                const item = button.closest(".weather-config-item");
+                const itemName = item.dataset.itemName;
+
+                const confirmed = window.confirm(`Удалить запись "${itemName}"?`);
+                if (!confirmed) return;
+
+                try {
+                    await postJson("/api/birthdays/config/delete", { name: itemName });
+                    loadBirthdaysConfig();
+                } catch (error) {
+                    window.alert(`Не удалось удалить запись: ${error.message}`);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Birthdays config:", error);
+    }
+}
+
+function initBirthdaysConfigActions() {
+    const addButton = document.getElementById("add-birthdays-config");
+    const state = document.getElementById("birthdays-config-state");
+
+    if (!addButton || !state) return;
+
+    addButton.addEventListener("click", async () => {
+        const nameInput = document.getElementById("birthdays-config-name");
+        const dateInput = document.getElementById("birthdays-config-date");
+        const noteInput = document.getElementById("birthdays-config-note");
+
+        const name = nameInput.value.trim();
+        const dateValue = dateInput.value.trim();
+        const note = noteInput.value.trim();
+
+        if (!name || !dateValue) {
+            state.textContent = "⚠️ Заполните имя и дату (MM-DD)";
+            return;
+        }
+
+        addButton.disabled = true;
+        state.textContent = "⏳ Добавление...";
+
+        try {
+            await postJson("/api/birthdays/config/add", { name, date: dateValue, note });
+
+            nameInput.value = "";
+            dateInput.value = "";
+            noteInput.value = "";
+
+            state.textContent = "✅ Запись добавлена";
+
+            loadBirthdaysConfig();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            addButton.disabled = false;
+        }
+    });
+}
+
+
 function initSettingsDrawer() {
     const button = document.getElementById("settings-button");
     const close = document.getElementById("settings-close");
@@ -670,6 +789,7 @@ function initSettingsDrawer() {
         loadRssConfig();
         loadWeatherConfig();
         loadNetworkConfig();
+        loadBirthdaysConfig();
         setLayoutCellsDraggable(true);
     }
 

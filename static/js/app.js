@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initRssConfigActions();
     initWeatherConfigActions();
     initNetworkConfigActions();
+    initBirthdaysConfigActions();
     initDragAndDrop();
     initFullscreenToggles();
     initFullscreenSwipe();
