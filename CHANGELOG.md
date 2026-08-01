@@ -4,6 +4,23 @@
 
 ---
 
+## v2.9.1
+
+### Fixed
+- A camera stream that never produced a single frame was never restarted. `ensure_stream()` tested `stream.last_frame_at`, which stays `0` until the first frame arrives — and `0` is falsy, so the staleness check silently never fired. With ffmpeg alive but stuck (unreachable camera, wrong password) the stream was neither dead nor stale and stayed wedged until the server was restarted. `is_stream_stale()` now measures a never-started stream against its own `started_at` and `STARTUP_TIMEOUT` instead. Reproduced with a process that stays alive without emitting frames: before the fix one ffmpeg start and no restart after `STALE_AFTER`, after it a correct second start
+- A leftover live frame was served as `"online"` regardless of age. The file sits on tmpfs and outlives the server process, so `get_camera_frame()` returning it on existence alone meant a frozen picture under a green indicator. It is now only treated as live while younger than `FRAME_MAX_AGE`, otherwise the request falls through to the cached snapshot
+- ffmpeg's stderr went to `DEVNULL`, so every failure surfaced as the same generic `camera stream did not produce a frame`. It is now drained by its own reader thread (a second thread is required — draining one of two pipes deadlocks ffmpeg when the other fills) keeping the last few lines, and `describe_stream_failure()` picks the informative one. `/api/cameras` now reports e.g. `Error opening input files: Connection timed out`, and the widget shows it in the card header rather than only a timestamp
+- Module `widget.js` files were served with no cache-busting at all, so a changed widget script could be served indefinitely from a stale browser cache. They now carry `?v={{ version }}`, which every commit bumps anyway
+
+### Security
+- `.gitignore` now covers `data/*.jpg`. Only `data/*.json` was listed, so the cached camera snapshots — pictures of the user's home — showed up as untracked files and could be committed by accident. Noticed when a test artifact appeared in `git status`
+- Captured ffmpeg output is passed through `CREDENTIALS_PATTERN` before being stored. ffmpeg echoes the whole RTSP URL back on failure, password included, which would otherwise have leaked the v2.9.0 credentials straight into `/api/cameras` and `data/cameras_cache.json`. Verified with a real failing stream: the captured line reads `rtsp://***:***@192.168.88.150:554/1/1` and the password appears nowhere
+
+### Verification
+- Each fix reproduced against the old behaviour and re-checked after; password redaction confirmed against real ffmpeg output; regression-tested a genuinely working stream (MJPEG from ffmpeg's `testsrc`) — frames flow, keep updating, and trigger no spurious restarts; confirmed in a browser that a failing camera shows `🔴 Error opening input files: Connection timed out`
+
+---
+
 ## v2.9.0
 
 ### Added
