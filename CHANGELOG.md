@@ -4,6 +4,14 @@
 
 ---
 
+## v2.10.2
+
+### Changed
+- The camera RTSP path `/1/1` is no longer documented as unverified. It had been carried as an untested Tiandy convention since v2.4.0; it is now **confirmed working on real hardware** — two Tiandy cameras streaming live frames (`"source": "online"`) once the address and cache-corruption problems from v2.8.10 and v2.10.1 were out of the way. Updated in `CLAUDE.md` and `docs/MODULES.md`
+- The note keeps the caveat that the path is camera-model-specific — one model and firmware are confirmed, not the vendor as a whole — and now points out that a wrong path shows up as `404 Not Found` in the widget status line, which is what distinguishes it from a credentials or network failure
+
+---
+
 ## v2.10.1
 
 ### Fixed
