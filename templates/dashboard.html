@@ -134,6 +134,22 @@
     </div>
 
     <div class="settings-section">
+        <p class="small">Учётные данные камер</p>
+
+        <div class="camera-config-form">
+            <input type="text" id="camera-credentials-username" class="settings-view-select" placeholder="Логин (по умолчанию admin)">
+            <input type="password" id="camera-credentials-password" class="settings-view-select" placeholder="Пароль" autocomplete="new-password">
+
+            <button id="save-camera-credentials" class="settings-action-button">
+                💾 Сохранить учётные данные
+            </button>
+        </div>
+
+        <p id="camera-credentials-state" class="small"></p>
+        <p class="small">Общие для всех камер. Хранятся в <code>config/local.json</code>, который не попадает в git.</p>
+    </div>
+
+    <div class="settings-section">
         <p class="small">Источники новостей</p>
 
         <div id="rss-config-list">
@@ -281,8 +297,8 @@
 <script src="{{ script_url }}"></script>
 {% endfor %}
 <script src="/static/js/widgets.js?v=6"></script>
-<script src="/static/js/settings.js?v=13"></script>
-<script src="/static/js/app.js?v=36"></script>
+<script src="/static/js/settings.js?v=14"></script>
+<script src="/static/js/app.js?v=37"></script>
 
 <footer class="footer">
     <div>

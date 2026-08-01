@@ -5,7 +5,9 @@ from modules.cameras.service import (
     delete_camera,
     get_camera_frame,
     get_cameras_status,
+    get_credentials,
     get_hosts,
+    set_credentials,
     update_camera,
 )
 
@@ -69,6 +71,17 @@ def api_delete_camera(payload: dict = Body(...)):
         raise HTTPException(status_code=404, detail=str(error))
 
     return {"status": "ok"}
+
+
+@router.get("/cameras/credentials")
+def api_cameras_credentials():
+    return get_credentials()
+
+
+@router.post("/cameras/credentials")
+def api_set_cameras_credentials(payload: dict = Body(...)):
+    credentials = set_credentials(payload.get("username"), payload.get("password"))
+    return {"status": "ok", "credentials": credentials}
 
 
 @router.get("/cameras/{camera_id}/snapshot")

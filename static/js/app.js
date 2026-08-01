@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initViewManagementActions();
     initImportExportActions();
     initCameraConfigActions();
+    initCameraCredentialsActions();
     initRssConfigActions();
     initWeatherConfigActions();
     initNetworkConfigActions();

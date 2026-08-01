@@ -655,6 +655,66 @@ function initNetworkConfigActions() {
 
 
 // ------------------------------
+// Camera Credentials
+// ------------------------------
+
+async function loadCameraCredentials() {
+    const usernameInput = document.getElementById("camera-credentials-username");
+    const state = document.getElementById("camera-credentials-state");
+
+    if (!usernameInput || !state) return;
+
+    try {
+        // The API deliberately never returns the password itself, only
+        // whether one is stored, so the field stays empty on load.
+        const data = await apiGet("/api/cameras/credentials");
+
+        usernameInput.value = data.username || "";
+        state.textContent = data.password_set ? "🔑 Пароль сохранён" : "⚠️ Пароль не задан";
+    } catch (error) {
+        console.error("Camera credentials:", error);
+    }
+}
+
+function initCameraCredentialsActions() {
+    const button = document.getElementById("save-camera-credentials");
+    const state = document.getElementById("camera-credentials-state");
+
+    if (!button || !state) return;
+
+    button.addEventListener("click", async () => {
+        const usernameInput = document.getElementById("camera-credentials-username");
+        const passwordInput = document.getElementById("camera-credentials-password");
+
+        const payload = { username: usernameInput.value };
+
+        // Only send the password when something was actually typed - an
+        // empty field means "leave the stored one alone", not "clear it",
+        // so the login can be changed without retyping the password.
+        if (passwordInput.value) {
+            payload.password = passwordInput.value;
+        }
+
+        button.disabled = true;
+        state.textContent = "⏳ Сохранение...";
+
+        try {
+            await postJson("/api/cameras/credentials", payload);
+
+            passwordInput.value = "";
+            state.textContent = "✅ Сохранено, потоки перезапущены";
+
+            loadCameraCredentials();
+        } catch (error) {
+            state.textContent = `⚠️ ${error.message}`;
+        } finally {
+            button.disabled = false;
+        }
+    });
+}
+
+
+// ------------------------------
 // Birthdays Config
 // ------------------------------
 
@@ -786,6 +846,7 @@ function initSettingsDrawer() {
         overlay.classList.add("open");
         loadSettingsDrawer();
         loadCamerasConfig();
+        loadCameraCredentials();
         loadRssConfig();
         loadWeatherConfig();
         loadNetworkConfig();

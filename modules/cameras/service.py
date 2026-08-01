@@ -1,4 +1,3 @@
-import os
 import subprocess
 import threading
 import time
@@ -6,6 +5,7 @@ from pathlib import Path
 
 from core.cache import CACHE_DIR, load_cache, save_cache
 from core.config import get_section, update_section
+from core.secrets import get_secret, set_secret
 from core.time import now_string
 
 # Read fresh from config/dashboard.json on every call rather than caching
@@ -209,12 +209,40 @@ def delete_camera(camera_id: str):
 
 
 def build_rtsp_url(host):
-    username = os.environ.get("CAMERA_USERNAME", "admin")
-    password = os.environ.get("CAMERA_PASSWORD", "")
+    username = get_secret("CAMERA_USERNAME", "admin")
+    password = get_secret("CAMERA_PASSWORD", "")
     port = host.get("port", 554)
     path = host.get("path", "/1/1")
 
     return f"rtsp://{username}:{password}@{host['ip']}:{port}{path}"
+
+
+def get_credentials():
+    """The password itself is never returned - only whether one is stored -
+    so it can't be read back out of the API by anyone who can reach the
+    dashboard on the network."""
+    return {
+        "username": get_secret("CAMERA_USERNAME", "admin"),
+        "password_set": bool(get_secret("CAMERA_PASSWORD", "")),
+    }
+
+
+def set_credentials(username: str = None, password: str = None):
+    if username is not None and username.strip():
+        set_secret("CAMERA_USERNAME", username.strip())
+
+    if password is not None:
+        # An empty password clears the stored one and hands control back to
+        # the CAMERA_PASSWORD environment variable.
+        set_secret("CAMERA_PASSWORD", password)
+
+    # Credentials are baked into the RTSP URL at ffmpeg startup, so every
+    # running stream has to be torn down for a new password to take effect -
+    # otherwise the old processes keep retrying with the old one. They are
+    # recreated lazily by ensure_stream() on the next frame request.
+    stop_all_streams()
+
+    return get_credentials()
 
 
 def get_live_file(camera_id):
