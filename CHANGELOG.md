@@ -4,6 +4,13 @@
 
 ---
 
+## v2.8.10
+
+### Fixed
+- Camera IPs in `config/dashboard.json` corrected from `192.168.88.201`/`.202` to `.150`/`.151`. The cameras had stopped displaying entirely; `ping` to the configured addresses returned `Destination Host Unreachable` from the Pi itself (ARP failure — nothing at those addresses on the LAN), confirming the config had drifted from the actual hardware rather than anything being wrong in the camera pipeline
+
+---
+
 ## v2.8.9
 
 ### Added
