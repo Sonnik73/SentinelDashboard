@@ -4,6 +4,23 @@
 
 ---
 
+## v2.10.0
+
+### Added
+- The network widget now works on Windows. `ping`'s flags differ per platform (`-c`/`-W` in seconds on Linux, `-n`/`-w` in milliseconds on Windows, `-W` in milliseconds on macOS), and `build_ping_command()` picks them from `platform.system()`. Previously the Linux flags were passed unconditionally, so on Windows every host was reported offline
+- `docs/INSTALL.md` gains a Windows section (venv activation, the PowerShell execution-policy prompt, the firewall prompt on `--host 0.0.0.0`, ffmpeg via winget) and a table of the platform differences; `README.md` no longer claims Linux only
+
+### Fixed
+- Latency parsing keyed on the English `time=`, which a Russian Windows never prints — it says `время=3мс` — and which also missed `time<1ms`, how Windows reports a sub-millisecond reply. It now anchors on the number in front of the millisecond unit and accepts a decimal comma, covering Linux, macOS, and English/Russian/German Windows (all verified against real sample output)
+- On Windows, `ping` exits **0** even when a router answers "Destination host unreachable" for a host that is down, so a dead host would have been reported online. A reply carrying no round-trip time is now cross-checked against known unreachable markers. This is exactly the failure mode that hid the cameras being off the network in v2.8.10, so it is worth not reproducing in the widget meant to detect it
+- Windows writes ping's output in the console OEM code page (cp866 on a Russian system), not Python's default, which would have turned `мс` into mojibake and broken parsing even after the pattern fix. `decode_output()` uses the `oem` codec, which resolves to the console's actual page
+- Interface detection ran `ip route get` and reported `Unknown` whenever it failed — always on Windows, and on Linux installs without `iproute2`. It now falls back to `psutil.net_if_addrs()`, matching the adapter that owns the local IP; `psutil` was already a dependency. On this dev container, which has no `ip` command, `/api/network` went from `"interface": "Unknown"` to `"interface": "Ethernet"`
+
+### Verification
+- Parsing checked against real ping output from Linux, macOS, and English/Russian/German Windows, including `<1ms` and decimal-comma forms, and confirmed the old pattern failed on the Windows cases; the zero-exit-code quirk exercised through `ping_host()` for both English and Russian wording; `classify_interface()` checked for Linux prefixes and localized Windows adapter names; Linux behaviour confirmed unchanged throughout. The cp866 decode path itself can only run on Windows — on other platforms the `oem` codec doesn't exist and the UTF-8 fallback is used, which is verified not to raise
+
+---
+
 ## v2.9.1
 
 ### Fixed
