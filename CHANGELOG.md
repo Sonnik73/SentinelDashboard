@@ -4,6 +4,22 @@
 
 ---
 
+## v2.9.0
+
+### Added
+- Camera credentials can now be typed into the Settings drawer ("Учётные данные камер" section) instead of only coming from `CAMERA_USERNAME`/`CAMERA_PASSWORD` environment variables. Backed by `GET`/`POST /api/cameras/credentials` in `modules/cameras/api.py`
+- New `core/secrets.py`, storing secrets in `config/local.json` — **not** `config/dashboard.json`, which is tracked in git and would publish the password to the repository. The file is covered by `.gitignore`'s existing `config/local.*` rule (previously a "Future configuration" placeholder, now actually used) and written with `0600` permissions so other accounts on the machine can't read it. A stored value wins over the environment variable, so existing env-var-only setups keep working and the UI overrides them when used
+- Saving credentials tears down every running stream via `stop_all_streams()`, since the username and password are baked into the RTSP URL when ffmpeg starts. `ensure_stream()` recreates them lazily on the next frame request, so a corrected password takes effect without restarting the server
+
+### Security
+- `GET /api/cameras/credentials` returns `{"username": ..., "password_set": true|false}` and never the password itself, so a stored password cannot be read back out by anyone who can reach the dashboard on the network. The Settings field is `type="password"` and is cleared after a successful save
+- Sending only `username` leaves the stored password untouched, so the login can be corrected without retyping the password; an explicitly empty `password` clears it and hands control back to the environment variable
+
+### Verification
+- Round trip verified via API and browser: password absent from every API response, `config/local.json` created `-rw-------` and confirmed ignored by git (`git check-ignore`), RTSP URL rebuilt with the new credentials, username-only update preserving the stored password, and env-var fallback still working after clearing
+
+---
+
 ## v2.8.10
 
 ### Fixed
