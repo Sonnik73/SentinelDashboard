@@ -61,10 +61,19 @@ async function updateCamera(instanceId) {
         const camera = (data.cameras || []).find(c => c.id === instanceId);
         if (!camera) return;
 
-        const statusIcon = camera.source === "online" ? "🟢" :
-            camera.source === "cache" ? "🟡" : "🔴";
+        // A failing camera shows why it is failing, not just when it last
+        // worked - the reason ffmpeg reported ("401 Unauthorized",
+        // "Connection timed out") used to be discarded entirely, so a wrong
+        // password looked exactly like an unplugged camera.
+        if (camera.source === "online") {
+            statusEl.textContent = `🟢 ${camera.last_sync ?? ""}`;
+        } else {
+            const icon = camera.source === "cache" ? "🟡" : "🔴";
+            statusEl.textContent = `${icon} ${camera.error || camera.last_sync || "нет сигнала"}`;
+        }
 
-        statusEl.textContent = `${statusIcon} ${camera.last_sync ?? "нет сигнала"}`;
+        // Full text on hover, since the header truncates a long one.
+        statusEl.title = camera.error || "";
 
         ensureCameraFrameLoop(instanceId, camera.fps);
 

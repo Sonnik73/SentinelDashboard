@@ -18,6 +18,10 @@ data/*.xls
 # Runtime cache
 data/*.json
 
+# Cached camera frames - these are pictures of the user's home, they must
+# never be committed
+data/*.jpg
+
 # Local secrets (camera credentials) - never commit these
 config/local.*
 

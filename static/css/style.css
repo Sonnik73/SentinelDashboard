@@ -161,6 +161,16 @@ body {
 
 .camera-header h2 {
     margin-bottom: 0;
+    white-space: nowrap;
+}
+
+/* An ffmpeg error line can be long - keep it on one line and let the title
+   attribute carry the full text rather than pushing the card taller. */
+.camera-header span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
 }
 
 .camera-snapshot {

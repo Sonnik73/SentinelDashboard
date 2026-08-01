@@ -1,6 +1,8 @@
+import re
 import subprocess
 import threading
 import time
+from collections import deque
 from pathlib import Path
 
 from core.cache import CACHE_DIR, load_cache, save_cache
@@ -29,6 +31,29 @@ STARTUP_TIMEOUT = 8          # max wait for a fresh stream's first frame
 STALE_AFTER = 5              # seconds without a new frame before restarting
 STATUS_WRITE_INTERVAL = 2    # throttle status + last-known-good writes
 
+# A live frame older than this is no longer "live" - the file is kept on
+# tmpfs and survives the server restarting, so its mere existence says
+# nothing about whether the stream is currently working.
+FRAME_MAX_AGE = 10
+
+# ffmpeg writes its diagnostics to stderr and is chatty enough to fill a
+# pipe buffer and block if nobody drains it, so a reader thread keeps only
+# the last few lines - which is where the actual reason for a failure ends
+# up ("401 Unauthorized", "Connection timed out", "404 Not Found").
+STDERR_KEEP_LINES = 12
+
+# ffmpeg echoes the whole RTSP URL back in its error output, password
+# included. That must never reach the API response or the status cache.
+CREDENTIALS_PATTERN = re.compile(r"(rtsp://)[^:/@\s]*:[^@\s]*@")
+
+# Picking the informative line out of ffmpeg's output: the last line is
+# often a generic "Error opening input files", while the real cause sits a
+# line or two above it.
+ERROR_MARKERS = (
+    "unauthorized", "forbidden", "not found", "timed out", "timeout",
+    "refused", "no route", "unreachable", "denied", "invalid", "failed",
+)
+
 # The live frame is rewritten several times a second - keep it on tmpfs
 # (RAM-backed) rather than wearing out the SD card. Falls back to the
 # normal cache dir if /dev/shm isn't available (e.g. non-Linux dev boxes).
@@ -46,9 +71,52 @@ class Stream:
         self.camera_id = camera_id
         self.process = None
         self.thread = None
+        self.stderr_thread = None
+        self.started_at = time.monotonic()
         self.last_frame_at = 0
         self.last_status_write = 0
         self.error = None
+        self.stderr_lines = deque(maxlen=STDERR_KEEP_LINES)
+
+
+def redact_credentials(text: str) -> str:
+    return CREDENTIALS_PATTERN.sub(r"\1***:***@", text)
+
+
+def describe_stream_failure(stream):
+    """Turns ffmpeg's captured output into one line worth showing a user.
+    Falls back to whatever the reader thread hit, and finally to a generic
+    message when ffmpeg said nothing at all."""
+    lines = list(stream.stderr_lines)
+
+    for line in reversed(lines):
+        if any(marker in line.lower() for marker in ERROR_MARKERS):
+            return line
+
+    if lines:
+        return lines[-1]
+
+    return stream.error or "camera stream did not produce a frame"
+
+
+def is_stream_stale(stream):
+    """A stream that has produced frames goes stale STALE_AFTER seconds
+    after the most recent one. A stream that has never produced any is
+    judged against its own start time instead - testing last_frame_at
+    alone left a never-started stream (unreachable camera, wrong password)
+    wedged forever, because it is 0 until the first frame arrives and the
+    check silently never fired."""
+    if stream.last_frame_at:
+        return time.monotonic() - stream.last_frame_at > STALE_AFTER
+
+    return time.monotonic() - stream.started_at > STARTUP_TIMEOUT
+
+
+def is_frame_fresh(frame_file):
+    try:
+        return time.time() - frame_file.stat().st_mtime <= FRAME_MAX_AGE
+    except OSError:
+        return False
 
 
 def get_widget_instances():
@@ -312,6 +380,21 @@ def _read_frames(stream):
         stream.error = str(error)
 
 
+def _read_stderr(stream):
+    """Drains ffmpeg's stderr for the lifetime of the process. This has to
+    run even when nobody reads the result: a full pipe buffer would block
+    ffmpeg itself, which is why this used to go to DEVNULL - at the cost of
+    throwing away every diagnostic the camera pipeline could offer."""
+    try:
+        for raw_line in stream.process.stderr:
+            line = redact_credentials(raw_line.decode("utf-8", errors="replace").strip())
+
+            if line:
+                stream.stderr_lines.append(line)
+    except Exception:
+        pass
+
+
 def _start_stream(camera_id):
     host = find_host(camera_id)
     stream = Stream(camera_id)
@@ -340,11 +423,16 @@ def _start_stream(camera_id):
     stream.process = subprocess.Popen(
         ffmpeg_args,
         stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
     )
 
+    # stdout and stderr each get their own reader thread - draining only one
+    # of two pipes deadlocks as soon as the other fills up.
     stream.thread = threading.Thread(target=_read_frames, args=(stream,), daemon=True)
     stream.thread.start()
+
+    stream.stderr_thread = threading.Thread(target=_read_stderr, args=(stream,), daemon=True)
+    stream.stderr_thread.start()
 
     return stream
 
@@ -357,6 +445,11 @@ def _stop_stream(stream):
         except subprocess.TimeoutExpired:
             stream.process.kill()
 
+    # Let the stderr reader finish draining, so a reason ffmpeg printed just
+    # before dying isn't lost when the stream is replaced.
+    if stream.stderr_thread is not None:
+        stream.stderr_thread.join(timeout=0.5)
+
 
 def ensure_stream(camera_id):
     """Lazily starts a camera's stream on first use, and restarts it if the
@@ -365,16 +458,20 @@ def ensure_stream(camera_id):
         stream = _streams.get(camera_id)
 
         is_dead = stream is not None and stream.process.poll() is not None
-        is_stale = (
-            stream is not None
-            and stream.last_frame_at
-            and time.monotonic() - stream.last_frame_at > STALE_AFTER
-        )
+        is_stale = stream is not None and is_stream_stale(stream)
 
         if stream is None or is_dead or is_stale:
             if stream is not None:
+                # Carry the dying stream's diagnostics over to its
+                # replacement, otherwise the reason it failed is lost the
+                # moment it gets restarted and every report goes generic.
                 _stop_stream(stream)
+                previous_error = describe_stream_failure(stream)
+            else:
+                previous_error = None
+
             stream = _start_stream(camera_id)
+            stream.error = previous_error
             _streams[camera_id] = stream
 
         return stream
@@ -400,7 +497,11 @@ def get_camera_frame(camera_id):
 
     deadline = time.monotonic() + STARTUP_TIMEOUT
     while time.monotonic() < deadline:
-        if live_file.exists():
+        # Existence alone isn't enough: the live file sits on tmpfs and
+        # outlives the server process, so a frame left over from an earlier
+        # session would otherwise be served as "online" and the widget would
+        # show a frozen picture under a green indicator.
+        if live_file.exists() and is_frame_fresh(live_file):
             try:
                 return live_file.read_bytes(), "online"
             except OSError:
@@ -409,7 +510,12 @@ def get_camera_frame(camera_id):
             break
         time.sleep(0.05)
 
-    error = stream.error or "camera stream did not produce a frame"
+    if stream.process.poll() is not None and stream.stderr_thread is not None:
+        # ffmpeg has just exited - give its stderr reader a moment to finish
+        # so the reported reason is the real one rather than an empty buffer.
+        stream.stderr_thread.join(timeout=0.5)
+
+    error = describe_stream_failure(stream)
     snapshot_file = get_snapshot_file(camera_id)
 
     if snapshot_file.exists():
