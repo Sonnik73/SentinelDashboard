@@ -90,7 +90,7 @@ docs/
 
 - Python 3.11+ (developed and tested on Python 3.13)
 - pip
-- Linux or Raspberry Pi OS (Raspberry Pi 4/5 recommended)
+- Linux or Raspberry Pi OS (Raspberry Pi 4/5 recommended); Windows 10/11 and macOS also work — see [INSTALL.md](docs/INSTALL.md#running-on-windows-1011) for the differences
 - No Node.js / npm required — the project runs as a single `uvicorn` process
 
 ---

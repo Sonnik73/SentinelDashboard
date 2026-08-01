@@ -57,6 +57,38 @@ http://<device-ip>:8000
 
 ---
 
+## Running on Windows 10/11
+
+The primary target is Linux / Raspberry Pi OS, but the dashboard runs on Windows too. Only the commands differ:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+Two things commonly get in the way. PowerShell may refuse to run the activation script — allow it for the current session with `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`. And starting with `--host 0.0.0.0` triggers a Windows Firewall prompt that has to be accepted before other devices on the network can reach the dashboard (`localhost` works either way). In `cmd.exe` the activation script is `.venv\Scripts\activate.bat`.
+
+For cameras, install ffmpeg and make sure it lands on `PATH` (`ffmpeg -version` should answer after reopening the terminal):
+
+```powershell
+winget install Gyan.FFmpeg
+```
+
+Camera credentials don't need environment variables — set them in the Settings drawer under "Учётные данные камер".
+
+What differs in behaviour:
+
+| | Windows |
+|---|---|
+| Temperature in the system widget | `N/A` — `vcgencmd` is Raspberry Pi only |
+| Disk usage | reported for the current drive |
+| Camera live frames | written to `data/live/` instead of `/dev/shm` (tmpfs isn't available), so slightly more disk writes |
+| Network widget | works — `ping` flags, output encoding and the exit-code quirk are all handled, see [MODULES.md](MODULES.md#network) |
+
+---
+
 ## Running as a service (systemd)
 
 To have SentinelDashboard start automatically on boot, create a systemd unit.

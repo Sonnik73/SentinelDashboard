@@ -38,7 +38,11 @@ Modules registered with `"type": "widget"` in their manifest and rendered on the
 - Pings each host listed in `config/dashboard.json` under `network.hosts`, and detects the active interface (Wi-Fi / Ethernet) and local IP
 - Hosts can also be added/edited/removed from the Settings drawer ("Хосты для пинга" section) instead of hand-editing the JSON: `GET /api/network/config` lists them, `POST /api/network/config/add` / `.../update` / `.../delete` manage them, same pattern as cameras/RSS/weather. `get_hosts()` reads fresh from `config/dashboard.json` on every call, so a host added through the UI is picked up on the next refresh with no server restart. A host has no separate `id`; it's identified by its (unique) `name`
 - Endpoint: `GET /api/network`
-- Shells out to `ping` and `ip route` — both must be available in `PATH`
+- Shells out to `ping`. The flags differ per platform (`-c`/`-W` in seconds on Linux, `-w` in milliseconds on Windows, `-W` in milliseconds on macOS), so `build_ping_command()` picks them from `platform.system()`
+- Latency parsing keys on the number in front of the millisecond unit rather than the English word `time=`, because ping's output is localized — a Russian Windows prints `время=3мс`. It also accepts `<1ms` (how Windows reports a sub-millisecond reply) and a decimal comma. The previous `time=([\d.]+)` pattern matched neither
+- On Windows, `ping` exits **0** even when a router answers "Destination host unreachable" for a host that is actually down, so a zero exit code alone isn't proof of life. A reply carrying no round-trip time is cross-checked against `UNREACHABLE_MARKERS` before the host is reported online
+- Windows writes ping's output in the console OEM code page (cp866 on a Russian system), which is not Python's default. `decode_output()` uses the `oem` codec, which resolves to whichever page the console actually uses; it only exists on Windows, hence the UTF-8 fallback
+- Interface detection prefers `ip route get` and falls back to `psutil.net_if_addrs()`, matching the adapter that owns the address from `get_local_ip()`. That covers Windows (no `ip` command) and Linux installs without `iproute2`, both of which previously reported `Unknown`. `classify_interface()` maps both Linux prefixes (`wlan0`, `eth0`, `enp3s0`) and localized Windows adapter names ("Беспроводная сеть") to Wi-Fi / Ethernet
 
 ### birthdays
 
