@@ -4,6 +4,18 @@
 
 ---
 
+## v2.10.1
+
+### Fixed
+- A corrupt cache file took its whole endpoint down with a 500. `core/cache.py`'s `load_cache()` called `json.load()` with nothing catching a decode error, so a truncated or empty `data/<name>_cache.json` propagated the exception all the way out. Found on real hardware: `/api/cameras` was returning `Internal Server Error`, which made the camera widget's `updateCamera()` throw before it could do anything — the status stayed on its `—` placeholder (so the v2.9.1 failure reason was never displayed, making it look like that feature was broken) and the `<img>` never received a `src`, leaving a broken-image icon. The cameras themselves were not the problem
+- `load_cache()` now returns `None` for an unreadable file, which every caller already handles as its offline-fallback path, and rejects valid JSON of the wrong shape (a list, a bare string) the same way, since callers all index the result as a mapping. The bad file is left alone rather than deleted — the next successful `save_cache()` overwrites it, so it heals on its own
+- This affected `weather` and `rss` identically, not just `cameras`; a corrupt cache for either would have produced the same 500
+
+### Verification
+- All five corruption forms (truncated, empty, non-JSON garbage, JSON list, JSON string) checked against `/api/cameras`, `/api/weather` and `/api/rss` — 15 combinations, every one a 500 before and a 200 after. Confirmed normal caching still works end to end: a valid cache reads back, a corrupted one reads as `None`, and a subsequent write restores it
+
+---
+
 ## v2.10.0
 
 ### Added
