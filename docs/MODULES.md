@@ -96,6 +96,8 @@ Provided functions:
 
 `core/cache.py`'s `save_cache()` writes to a uniquely-named temp file (`tempfile.mkstemp()`) and swaps it in with an atomic rename, rather than writing the JSON file in place — with two independent camera widgets each writing status on their own request cycle, concurrent writers were common enough to actually hit this: a fixed temp filename let two threads' writes interleave into the same file, and a reader could catch it truncated mid-write. Since `json.JSONDecodeError` is a `ValueError` subclass, that corruption was silently misreported as "unknown camera" (404) instead of the real transient failure.
 
+`load_cache()` treats an unreadable cache file as an absent one and returns `None`, rather than letting the exception escape. A truncated, empty, or non-JSON file — however it got that way, including a cache written by an older build or a power cut on the SD card — used to reach the caller as an unhandled exception and turn the whole endpoint into a 500. That is strictly worse than having no cache at all, which every caller already handles as its offline-fallback path. Valid JSON of the wrong shape (a list, a bare string) is rejected the same way, since every caller indexes the result as a mapping. The bad file is not deleted: the next successful `save_cache()` overwrites it, so the situation heals on its own. This is the same principle as a broken `config/dashboard.json` not being allowed to take the server down.
+
 ---
 
 ## Adding a New Module

@@ -17,8 +17,26 @@ def load_cache(name: str):
     if not cache_file.exists():
         return None
 
-    with open(cache_file, "r", encoding="utf-8") as file:
-        return json.load(file)
+    try:
+        with open(cache_file, "r", encoding="utf-8") as file:
+            data = json.load(file)
+    except (OSError, ValueError):
+        # A truncated or otherwise unreadable cache file counts as "no
+        # cache" rather than taking the endpoint down with a 500. Every
+        # caller already treats None as their offline-fallback path, and
+        # the next successful save_cache() overwrites the bad file, so this
+        # heals itself. Same principle as a broken config/dashboard.json
+        # not being allowed to kill the server.
+        #
+        # json.JSONDecodeError is a ValueError subclass, so catching
+        # ValueError covers it - and this is deliberately broad, because a
+        # corrupt cache must never be more disruptive than a missing one.
+        return None
+
+    # Valid JSON of the wrong shape is just as unusable as a truncated file -
+    # every caller indexes the result as a mapping - so it gets the same
+    # treatment here instead of an AttributeError surfacing deeper in.
+    return data if isinstance(data, dict) else None
 
 
 def save_cache(name: str, data):
